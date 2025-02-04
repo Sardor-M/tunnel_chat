@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import styled from "styled-components";
+import { TunnelChatUserProvider } from "./context/TunnelChatUserContext";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 
 const ChatContainer = styled.div`
   width: 400px;
@@ -53,52 +55,16 @@ const Button = styled.button`
 `;
 
 const App: React.FC = () => {
-  const [messages, setMessages] = useState<string[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const socketRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    socketRef.current = new WebSocket("ws://localhost:8080");
-
-    socketRef.current.onopen = () => console.log("Connected to server");
-
-    socketRef.current.onmessage = (event) => {
-      setMessages((prevMessages) => [...prevMessages, event.data]);
-    };
-
-    return () => {
-      socketRef.current?.close();
-    };
-  }, []);
-
-  const sendMessage = () => {
-    if (socketRef.current && inputMessage.trim()) {
-      
-      socketRef.current.send(inputMessage);
-      setMessages((prev) => [...prev, `You: ${inputMessage}`]);
-      setInputMessage("");
-    }
-  };
-
   return (
-    <ChatContainer>
-      <h2>Real-Time Chat</h2>
-      <MessagesContainer>
-        {messages.map((msg, index) => (
-          <Message key={index}>{msg}</Message>
-        ))}
-      </MessagesContainer>
-      <InputContainer>
-        <Input
-          type="text"
-          value={inputMessage}
-          onChange={(e) => setInputMessage(e.target.value)}
-          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="Type a message..."
-        />
-        <Button onClick={sendMessage}>Send</Button>
-      </InputContainer>
-    </ChatContainer>
+    <TunnelChatUserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<ChatContainer>Home</ChatContainer>} />
+          <Route path="/chat" element={<ChatContainer>Chat</ChatContainer>} />
+          <Route path="/login" element={<ChatContainer>Login</ChatContainer>} />
+        </Routes>
+      </BrowserRouter>
+    </TunnelChatUserProvider>
   );
 };
 
