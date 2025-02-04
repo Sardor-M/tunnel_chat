@@ -2,6 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { TunnelChatUserProvider } from "./context/TunnelChatUserContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import TunnelHome from "./pages/TunnelHome";
+import TunnelChat from "./pages/TunnelChat";
+import TunnelLogin from "./pages/TunnelLogin";
 
 const ChatContainer = styled.div`
   width: 400px;
@@ -59,9 +62,9 @@ const App: React.FC = () => {
     <TunnelChatUserProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ChatContainer>Home</ChatContainer>} />
-          <Route path="/chat" element={<ChatContainer>Chat</ChatContainer>} />
-          <Route path="/login" element={<ChatContainer>Login</ChatContainer>} />
+          <Route path="/" element={<TunnelHome/>} />
+          <Route path="/chat" element={<TunnelChat/>} />
+          <Route path="/login" element={<TunnelLogin/>} />
         </Routes>
       </BrowserRouter>
     </TunnelChatUserProvider>
