@@ -1,0 +1,194 @@
+import React, { useState } from "react";
+import styled from "styled-components";
+import { IoIosArrowBack } from "react-icons/io";
+import { IoLogOutOutline } from "react-icons/io5";
+import { Button, Modal } from "antd";
+import { Slant as Hamburger } from "hamburger-react";
+
+const Container = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: 0;
+  width: 100%;
+  max-width: 600px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f2f2f2;
+  z-index: 100;
+  background: ${({ isOpen }) =>
+    isOpen ? "rgba(51, 51, 255, 0.6)" : "rgba(255, 255, 255, 0.4)"};
+  backdrop-filter: blur(11.2px);
+  -webkit-backdrop-filter: blur(11.2px);
+`;
+
+// const Logo = styled.img`
+//   position: absolute;
+//   top: 10px;
+//   left: 10px;
+//   height: 40px;
+//   transition: all 0.2s ease-in-out;
+
+//   &:hover {
+//     filter: contrast(0%) brightness(0%);
+//   }
+// `;
+
+const BackButton = styled.div`
+  width: 40px;
+  height: 30px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 28px;
+  border: 1.5px solid black;
+  border-radius: 5px;
+  padding-top: 4px;
+`;
+
+const Title = styled.div`
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18px;
+`;
+
+const HamburgerMenu = styled.div`
+  position: absolute;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  z-index: 2;
+  padding: 0 22px;
+  margin: 0;
+`;
+
+const Menu = styled.div<{ isOpen: boolean }>`
+  position: absolute;
+  top: ${({ isOpen }) => (isOpen ? "0" : "-250px")};
+  left: 0;
+  width: 100%;
+  background-color: black;
+  color: white;
+  transition: top 0.3s ease-in-out;
+  padding-bottom: 20px;
+  z-index: 1;
+`;
+
+const MenuList = styled.ul`
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+`;
+
+const MenuItem = styled.li`
+  margin-bottom: 30px;
+  font-size: 20px;
+  font-weight: 700;
+
+  a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: 700;
+  }
+`;
+
+const LogoutButtonContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
+const DimOverlay = styled.div<{ isOpen: boolean }>`
+  display: ${({ isOpen }) => (isOpen ? "block" : "none")};
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+
+  z-index: 1;
+`;
+
+const Header: React.FC = () => {
+  const [isOpen, setOpen] = useState<boolean>(false);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+//   const [title, setTitle] = useState<string>("Home");
+
+  const handleBack = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmBack = () => {
+    setIsModalOpen(false);
+  };
+
+  return (
+    <>
+      <Container isOpen={isOpen}>
+        <BackButton onClick={handleBack}>
+          <IoIosArrowBack />
+        </BackButton>
+        {/* <Title>{title}</Title> */}
+        <HamburgerMenu>
+          <Hamburger toggled={isOpen} size={20} toggle={setOpen} />
+        </HamburgerMenu>
+      </Container>
+      <DimOverlay isOpen={isOpen} onClick={() => setOpen(false)} />
+      <Menu isOpen={isOpen}>
+        <MenuList>
+          <MenuItem>
+            <a href="/">Home</a>
+          </MenuItem>
+          <MenuItem>
+            <a href="/login">Login</a>
+          </MenuItem>
+          <MenuItem>
+            <a href="/chat">Chat</a>
+          </MenuItem>
+          <MenuItem>
+            <a href="/myPage">My Page</a>
+          </MenuItem>
+        </MenuList>
+        <LogoutButtonContainer>
+          <Button
+            type="primary"
+            shape="round"
+            icon={<IoLogOutOutline />}
+            style={{ backgroundColor: "#D4D4D4", color: "#000" }}
+          >
+            Logout
+          </Button>
+        </LogoutButtonContainer>
+      </Menu>
+      <Modal
+        title="Go Back"
+        open={isModalOpen}
+        onCancel={handleCancel}
+        width={450}
+        centered
+        footer={[
+          <Button key="cancel" onClick={handleCancel}>
+            Stay
+          </Button>,
+          <Button key="back" type="primary" onClick={handleConfirmBack}>
+            Go Back
+          </Button>,
+        ]}
+      >
+        Are you sure you want to go back?
+      </Modal>
+    </>
+  );
+};
+
+export default Header;

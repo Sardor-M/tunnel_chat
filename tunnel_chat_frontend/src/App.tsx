@@ -2,9 +2,9 @@ import React from "react";
 import styled from "styled-components";
 import { TunnelChatUserProvider } from "./context/TunnelChatUserContext";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import TunnelHome from "./pages/TunnelHome";
-import TunnelChat from "./pages/TunnelChat";
-import TunnelLogin from "./pages/TunnelLogin";
+import TunnelHome from "./pages/Home";
+import TunnelChat from "./components/TunnelChat";
+import TunnelLogin from "./components/TunnelLogin";
 
 const ChatContainer = styled.div`
   width: 400px;
