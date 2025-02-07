@@ -1,25 +1,24 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import { IoIosArrowBack } from "react-icons/io";
 import { IoLogOutOutline } from "react-icons/io5";
 import { Button, Modal } from "antd";
 import { Slant as Hamburger } from "hamburger-react";
 
-const Container = styled.div<{ isOpen: boolean }>`
+const Container = styled.div`
   position: absolute;
   top: 0;
+  max-width: none;
+  border-bottom: none;
   width: 100%;
-  max-width: 600px;
   height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f2f2f2;
   z-index: 100;
-  background: ${({ isOpen }) =>
-    isOpen ? "rgba(51, 51, 255, 0.6)" : "rgba(255, 255, 255, 0.4)"};
-  backdrop-filter: blur(11.2px);
-  -webkit-backdrop-filter: blur(11.2px);
+  background: #1c77c3;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 `;
 
 // const Logo = styled.img`
@@ -68,10 +67,11 @@ const HamburgerMenu = styled.div`
 
 const Menu = styled.div<{ isOpen: boolean }>`
   position: absolute;
+  padding-top: 20px;
   top: ${({ isOpen }) => (isOpen ? "0" : "-250px")};
   left: 0;
   width: 100%;
-  background-color: black;
+  background-color: #1c77c3;
   color: white;
   transition: top 0.3s ease-in-out;
   padding-bottom: 20px;
@@ -91,9 +91,33 @@ const MenuItem = styled.li`
   font-weight: 700;
 
   a {
+    position: relative;
     text-decoration: none;
-    color: #fff;
+    color: #000000;
     font-weight: 700;
+    overflow: hidden;
+    display: inline-block;
+    transition: color 0.3s ease;
+  }
+
+  a:hover {
+    color: transparent;
+  }
+
+  a::after {
+    content: attr(data-hover);
+    position: absolute;
+    left: 0;
+    top: -100%;
+    width: 100%;
+    text-align: center;
+    color: #f39237;
+    font-weight: 700;
+    transition: top 0.3s ease;
+  }
+
+  a:hover::after {
+    top: 0;
   }
 `;
 
@@ -111,14 +135,13 @@ const DimOverlay = styled.div<{ isOpen: boolean }>`
   width: 100%;
   height: 100vh;
   background-color: rgba(0, 0, 0, 0.5);
-
   z-index: 1;
 `;
 
-const Header: React.FC = () => {
+export default function Header() {
   const [isOpen, setOpen] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-//   const [title, setTitle] = useState<string>("Home");
+  //   const [title, setTitle] = useState<string>("Home");
 
   const handleBack = () => {
     setIsModalOpen(true);
@@ -134,7 +157,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <Container isOpen={isOpen}>
+      <Container>
         <BackButton onClick={handleBack}>
           <IoIosArrowBack />
         </BackButton>
@@ -147,22 +170,30 @@ const Header: React.FC = () => {
       <Menu isOpen={isOpen}>
         <MenuList>
           <MenuItem>
-            <a href="/">Home</a>
+            <a href="/" data-hover="Home!">
+              Home
+            </a>
           </MenuItem>
           <MenuItem>
-            <a href="/login">Login</a>
+            <a href="/login" data-hover="Login!">
+              Login
+            </a>
           </MenuItem>
           <MenuItem>
-            <a href="/chat">Chat</a>
+            <a href="/chat" data-hover="Chat!">
+              Chat
+            </a>
           </MenuItem>
           <MenuItem>
-            <a href="/myPage">My Page</a>
+            <a href="/myPage" data-hover={`My Page!`}>
+              My Page
+            </a>
           </MenuItem>
         </MenuList>
         <LogoutButtonContainer>
           <Button
             type="primary"
-            shape="round"
+            shape="default"
             icon={<IoLogOutOutline />}
             style={{ backgroundColor: "#D4D4D4", color: "#000" }}
           >
@@ -189,6 +220,4 @@ const Header: React.FC = () => {
       </Modal>
     </>
   );
-};
-
-export default Header;
+}
