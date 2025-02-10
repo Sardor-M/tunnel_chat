@@ -71,7 +71,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           icon={<MdLock />}
         />
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        <Button variant="submit">Login</Button>
+        <Button variant="add" position="full">Login</Button>
       </Form>
     </FormContainer>
   );

@@ -87,6 +87,8 @@ export default function Chat() {
         type: "SET_USERNAME",
         username: myUsername,
       };
+      const user = localStorage.getItem("username") || "Anonymous";
+      console.log("Sending SET_USERNAME:", user);
       ws.send(JSON.stringify(setUserMsg));
     };
 
@@ -171,7 +173,7 @@ export default function Chat() {
           // }
           icon={<MdDriveFileRenameOutline />}
         />
-        <Button onClick={sendMessage} variant="submit">
+        <Button onClick={sendMessage} variant="submit" position="right">
           Send
         </Button>
       </InputContainer>

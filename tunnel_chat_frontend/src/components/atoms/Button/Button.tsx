@@ -1,13 +1,19 @@
 import styled from "styled-components";
 
+type PositionAlignments = "left" | "right" | "full" | "center";
+
 interface ButtonProps {
   children: React.ReactNode;
+  position: PositionAlignments;
   onClick?: () => void;
-  variant?: "submit" | "rest" | "add"; 
+  variant?: "submit" | "reset" | "add";
   disabled?: boolean;
 }
 
-const StyledButton = styled.button<{ variant?: string }>`
+const StyledButton = styled.button<{
+  variant: string;
+  position: PositionAlignments;
+}>`
   padding: 10px 16px;
   border: none;
   padding: 13px;
@@ -16,21 +22,31 @@ const StyledButton = styled.button<{ variant?: string }>`
   transition: background 0.2s, opacity 0.2s;
   font-size: 14px;
   font-weight: bold;
-  width: 100%;
+
+  ${({ position }) => {
+    switch (position) {
+      case "left":
+        return "align-self: flex-start;";
+      case "right":
+        return "align-self: flex-end;";
+      case "center":
+        return "display: block; margin-left: auto; margin-right: auto;";
+      case "full":
+        return "width: 100%";
+      default:
+        return "width: 100%";
+    }
+  }}
 
   background: ${({ variant }) =>
-    variant === "submit"
-      ? "#666"
-      : variant === "rest"
-      ? "#FF3333"
-      : "#3333FF"};
+    variant === "submit" ? "#61ADFF" : variant === "reset" ? "#FF3333" : "#3333FF"};
   color: white;
 
   &:hover {
     background: ${({ variant }) =>
       variant === "submit"
-        ? "#555"
-        : variant === "rest"
+        ? "#0582CA"
+        : variant === "reset"
         ? "#CC0000"
         : "#2222FF"};
   }
@@ -43,12 +59,18 @@ const StyledButton = styled.button<{ variant?: string }>`
 
 const Button: React.FC<ButtonProps> = ({
   children,
+  position = "full",
   onClick,
   variant = "submit",
   disabled,
 }) => {
   return (
-    <StyledButton onClick={onClick} variant={variant} disabled={disabled}>
+    <StyledButton
+      onClick={onClick}
+      variant={variant}
+      disabled={disabled}
+      position={position}
+    >
       {children}
     </StyledButton>
   );
