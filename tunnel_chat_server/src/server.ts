@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import http from "http";
 import WebSocket, { WebSocketServer } from "ws";
+import { onlineUsersRouter } from "./routes/onlineUsers";
+import cors from "cors";
 
 type ClientInfo = {
   socket: WebSocket;
@@ -10,10 +12,17 @@ type ClientInfo = {
 
 const app = express();
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 // buyerda http server qilamiz va websocketga wrap qilamiz
 const httpServer = http.createServer(app);
 const tunnelServer = new WebSocketServer({ server: httpServer });
+
+app.use("/onlineUsers", onlineUsersRouter);
 
 const rooms: Record<string, string[]> = {
   General: [],
@@ -53,12 +62,13 @@ app.post("/login", (req: Request, res: Response): void => {
 });
 
 // buyerda esa ulangan klientlarni saqlaymiz
-const connectedClients: Record<string, ClientInfo> = {};
+export const connectedClients: Record<string, ClientInfo> = {};
 
 tunnelServer.on("connection", (socket: WebSocket) => {
   console.log("Client joined the Tunnel Chat");
   let username: string | null = null;
   let currentRoom = "General";
+
   socket.on("message", (rawData: string) => {
     try {
       const data = JSON.parse(rawData);
@@ -67,16 +77,17 @@ tunnelServer.on("connection", (socket: WebSocket) => {
         if (typeof data.username === "string") {
           username = data.username;
 
-          connectedClients[username!] = {
-            socket,
-            username,
-            lastActive: Date.now(),
-          };
-
-          console.log(username, "joined");
+          if (username) {
+            connectedClients[username] = {
+              socket,
+              username,
+              lastActive: Date.now(),
+            };
+            console.log(username, "joined");
+            rooms[currentRoom].push(username);
+          }
 
           // buyerdagi default roomga qoshiladi;
-          rooms[currentRoom].push(username!);
           broadcastToRoom(
             `${username} joined the room`,
             currentRoom,
