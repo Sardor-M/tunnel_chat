@@ -2,10 +2,11 @@ import express, { Request, Response } from "express";
 import http from "http";
 import WebSocket, { WebSocketServer } from "ws";
 
-// type LoginBody = {
-//   username: string;
-//   password: string;
-// }
+type ClientInfo = {
+  socket: WebSocket;
+  username: string;
+  lastActive: number; // qachon kirganligini saqlaymiz
+};
 
 const app = express();
 app.use(express.json());
@@ -37,23 +38,22 @@ const users = [
 ];
 
 app.post("/login", (req: Request, res: Response): void => {
-    const { username, password } = req.body;
-    const foundUser = users.find(
-      (user) => user.username === username && user.password === password
-    );
-    if (foundUser) {
-      res.status(200).json({
-        message: "Login successful",
-        username: username,
-      });
-    } else {
-      res.status(401).json({ message: "Invalid credentials" });
-    }
+  const { username, password } = req.body;
+  const foundUser = users.find(
+    (user) => user.username === username && user.password === password
+  );
+  if (foundUser) {
+    res.status(200).json({
+      message: "Login successful",
+      username: username,
+    });
+  } else {
+    res.status(401).json({ message: "Invalid credentials" });
   }
-);
+});
 
-// buyerda esa ulangan kilentlarni saqlaymiz
-const connectedClients: Record<string, WebSocket> = {};
+// buyerda esa ulangan klientlarni saqlaymiz
+const connectedClients: Record<string, ClientInfo> = {};
 
 tunnelServer.on("connection", (socket: WebSocket) => {
   console.log("Client joined the Tunnel Chat");
@@ -67,7 +67,14 @@ tunnelServer.on("connection", (socket: WebSocket) => {
         if (typeof data.username === "string") {
           username = data.username;
 
-          connectedClients[username!] = socket;
+          connectedClients[username!] = {
+            socket,
+            username,
+            lastActive: Date.now(),
+          };
+
+          console.log(username, "joined");
+
           // buyerdagi default roomga qoshiladi;
           rooms[currentRoom].push(username!);
           broadcastToRoom(
@@ -93,7 +100,9 @@ tunnelServer.on("connection", (socket: WebSocket) => {
         }
       } else if (data.type === "CHAT") {
         const message = data.message;
+
         if (username) {
+          connectedClients[username].lastActive = Date.now();
           broadcastToRoom(`${username}: ${message}`, currentRoom);
         }
       } else if (data.type === "FILE_TRANSFER") {
@@ -123,8 +132,8 @@ function broadcastToRoom(message: string, roomName: string, sender?: string) {
 
   roomUsers.forEach((user) => {
     const client = connectedClients[user];
-    if (client && client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: "CHAT", message }));
+    if (client && client.socket.readyState === WebSocket.OPEN) {
+      client.socket.send(JSON.stringify({ type: "CHAT", message }));
     }
   });
 }

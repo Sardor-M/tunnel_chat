@@ -96,7 +96,7 @@ export default function Chat() {
         const text = data.message as string;
 
         let isMine: boolean = false;
-        if (text.startsWith(`${myUsername} :`)) {
+        if (text.startsWith(`${myUsername}:`)) {
           isMine = true;
         }
 
