@@ -185,7 +185,7 @@ export default function Header() {
             </a>
           </MenuItem>
           <MenuItem>
-            <a href="/myPage" data-hover={`My Page!`}>
+            <a href="/myPage" data-hover={"My Page"}>
               My Page
             </a>
           </MenuItem>

@@ -66,22 +66,73 @@ const InputContainer = styled.div`
 //   }
 // `;
 
+type Message = {
+  text: string;
+  isMine: boolean;
+};
+
 export default function Chat() {
-  const [messages, setMessages] = useState<{ text: string; isMine: boolean }[]>(
-    []
-  );
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
 
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    setMessages([...messages, { text: input, isMine: true }]);
-    setInput("");
-  };
+  const myUsername = localStorage.getItem("username") || "Anonymous";
+
+  useEffect(() => {
+    const ws = new WebSocket("ws://localhost:8080");
+    ws.onopen = () => {
+      console.log("Connected to web socket server. ");
+      const setUserMsg = {
+        type: "SET_USERNAME",
+        username: myUsername,
+      };
+      ws.send(JSON.stringify(setUserMsg));
+    };
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data.toString());
+      if (data.type === "CHAT") {
+        const text = data.message as string;
+
+        let isMine: boolean = false;
+        if (text.startsWith(`${myUsername} :`)) {
+          isMine = true;
+        }
+
+        // we add the message to local state
+        setMessages((prev) => [...prev, { text, isMine }]);
+      }
+    };
+
+    ws.onclose = () => {
+      console.log("web socket is closed.");
+    };
+
+    setSocket(ws);
+
+    return () => {
+      ws.close();
+    };
+  }, [myUsername]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  const sendMessage = () => {
+    if (!input.trim()) return;
+
+    const chatMsg = {
+      type: "CHAT",
+      message: input,
+    };
+
+    socket?.send(JSON.stringify(chatMsg));
+
+    setMessages([...messages, { text: input, isMine: true }]);
+    setInput("");
+  };
 
   const handleInputBlur = () => {
     console.log("received the data: ");
@@ -120,7 +171,9 @@ export default function Chat() {
           // }
           icon={<MdDriveFileRenameOutline />}
         />
-        <Button onClick={sendMessage} variant="submit">Send</Button>
+        <Button onClick={sendMessage} variant="submit">
+          Send
+        </Button>
       </InputContainer>
     </ChatContainer>
   );

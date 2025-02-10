@@ -1,4 +1,4 @@
-import  { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { animate } from "motion";
 import styled from "styled-components";
 
@@ -91,7 +91,7 @@ const TunnelHome = () => {
       const animationDuration = 1800; // 1.8 seconds
       const animationProgress = Math.min(elapsedTime / animationDuration, 1);
 
-      // re-loading qilganda canvasni o'chiramiz 
+      // re-loading qilganda canvasni o'chiramiz
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = "#00000";
       ctx.fillRect(0, 0, width, height);
