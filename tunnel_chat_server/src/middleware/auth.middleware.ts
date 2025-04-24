@@ -34,7 +34,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             return;
         }
 
-        // we attache the user information to request
+        // we attach the user information to request
         req.user = {
             username: result.username,
             email: result.email,

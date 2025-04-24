@@ -15,6 +15,7 @@ type FileMetadata = {
     roomId?: string;
     isEncrypted: boolean;
     downloadCount: number;
+    checksum: string;
 };
 
 /**
@@ -137,6 +138,7 @@ export const fileService = {
                     roomId: fileData.roomId ?? undefined,
                     isEncrypted: fileData.isEncrypted,
                     downloadCount: fileData.downloadCount,
+                    checksum: fileData.checksum,
                 },
             };
         } catch (error) {
@@ -198,6 +200,7 @@ export const fileService = {
             roomId: file[0].roomId ?? undefined,
             isEncrypted: file[0].isEncrypted,
             downloadCount: file[0].downloadCount,
+            checksum: file[0].checksum,
         };
     },
 };
