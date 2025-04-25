@@ -1,26 +1,56 @@
-import React from "react";
-import { TunnelChatUserProvider } from "./context/TunnelChatUserContext";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Layout from "./layout/Layout";
-import Home from "./pages/Home";
-import Chat from "./pages/Chat";
-import Login from "./pages/Login";
+import { TunnelChatUserProvider } from './context/TunnelChatUserContext';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import Home from '@/pages/Home/Home';
+import Chat from '@/pages/Chat/Chat';
+import Login from '@/pages/Auth/Login';
+import MyPage from '@/pages/MyPage/MyPage';
+import TunnelRooms from '@/pages/Rooms/Rooms';
+import ProtectedRoute from '@/utils/ProtectedRoute';
+import Layout from '@/layout/Layout';
 
-const App: React.FC = () => {
-  return (
-    <TunnelChatUserProvider>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TunnelChatUserProvider>
-
-  );
-};
-
-export default App;
+export default function App() {
+    return (
+        <TunnelChatUserProvider>
+            <BrowserRouter>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<Home />} />
+                        <Route
+                            path="/chat"
+                            element={
+                                <ProtectedRoute>
+                                    <Chat />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/login" element={<Login />} />
+                        <Route
+                            path="/myPage"
+                            element={
+                                <ProtectedRoute>
+                                    <MyPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/rooms"
+                            element={
+                                <ProtectedRoute>
+                                    <TunnelRooms />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/chat/:roomId"
+                            element={
+                                <ProtectedRoute>
+                                    <Chat />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
+                </Layout>
+            </BrowserRouter>
+        </TunnelChatUserProvider>
+    );
+}
