@@ -112,7 +112,7 @@ const IconButtonWrapper = styled.button`
 
 const SendButton = styled.button`
     min-width: 48px;
-    height: 48px;
+    height: 38px;
     border-radius: 15px;
     background-color: #4285f4;
     color: white;
@@ -251,7 +251,7 @@ export default function Chat({ className }: ChatProps) {
                     </IconButtonWrapper>
                 </StyledTextField>
                 <SendButton onClick={sendMessage}>
-                    <SendIcon size={24} />
+                    <SendIcon size={20} />
                 </SendButton>
             </InputArea>
         </ChatContainer>

@@ -1,8 +1,8 @@
+import { MessageSquare, Folder, MapPin } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { authService } from '@/services/authService';
-import { MessageSquare, Folder, MapPin } from 'lucide-react';
 
 type ActivityItem = {
     type: string;
@@ -66,7 +66,7 @@ const StatsCard = styled.div`
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 `;
 
-const StatsIcon = styled.div`
+const StatsIcon = styled.div<{ as?: React.ElementType }>`
     position: absolute;
     top: -20px;
     left: 20px;
@@ -79,6 +79,11 @@ const StatsIcon = styled.div`
     justify-content: center;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     color: white;
+
+    & > svg {
+        width: 20px;
+        height: 20px;
+    }
 `;
 
 const StatsTitle = styled.h6`
@@ -273,7 +278,7 @@ export default function MyPage() {
                 >
                     <StatsCard>
                         <StatsIcon>
-                            <MapPin size={20} />
+                            <MapPin />
                         </StatsIcon>
                         <CardContent>
                             <StatsTitle>Rooms</StatsTitle>
@@ -289,7 +294,7 @@ export default function MyPage() {
                 >
                     <StatsCard>
                         <StatsIcon>
-                            <MessageSquare size={20} />
+                            <MessageSquare />
                         </StatsIcon>
                         <CardContent>
                             <StatsTitle>Messages</StatsTitle>
@@ -305,7 +310,7 @@ export default function MyPage() {
                 >
                     <StatsCard>
                         <StatsIcon>
-                            <Folder size={20} />
+                            <Folder />
                         </StatsIcon>
                         <CardContent>
                             <StatsTitle>Files</StatsTitle>
