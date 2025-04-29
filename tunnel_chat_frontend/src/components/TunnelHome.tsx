@@ -1,837 +1,580 @@
-// import { useRef, useState, useEffect } from "react";
-// import { animate } from "motion";
-// import styled from "styled-components";
-// import Button from "./atoms/Button/Button";
+import { useRef, useState, useEffect } from 'react';
+import { animate } from 'motion';
+import styled from 'styled-components';
 
-// const UserIcon = styled.div<{ x: number; y: number }>`
-//   position: absolute;
-//   top: ${(props) => props.y}px;
-//   left: ${(props) => props.x}px;
-//   width: 20px;
-//   height: 20px;
-//   background: #0ff;
-//   border-radius: 50%;
-//   transform: translate(-50%, -50%);
-//   z-index: 2;
-// `;
-
-// const Container = styled.div`
-//   position: relative;
-//   width: 100%;
-//   height: 100%;
-//   background-color: black;
-//   overflow: hidden;
-// `;
-
-// const CanvasWrapper = styled.div`
-//   position: relative;
-// `;
-
-// const StyledCanvas = styled.canvas`
-//   display: block;
-// `;
-
-// const TextWrapper = styled.div<{ $show: boolean }>`
-//   position: absolute;
-//   top: 50%;
-//   left: 50%;
-//   transform: translate(-50%, -50%);
-//   text-align: center;
-//   opacity: ${(props) => (props.$show ? 1 : 0)};
-//   transition: opacity 0.5s ease-out;
-// `;
-
-// const GradientText = styled.h1`
-//   font-size: 2.5rem;
-//   font-weight: bold;
-//   font-family: monospace;
-//   letter-spacing: 0.1em;
-//   white-space: nowrap;
-//   background: linear-gradient(to right, #60a5fa, #2563eb);
-//   -webkit-background-clip: text;
-//   background-clip: text;
-//   color: transparent;
-// `;
-
-// // const SearchButton = styled.button`
-// //   position: absolute;
-// //   bottom: 40px;
-// //   right: 40px;
-// //   padding: 10px 20px;
-// //   background: #2563eb;
-// //   color: #fff;
-// //   border: none;
-// //   border-radius: 6px;
-// //   cursor: pointer;
-// //   font-size: 1rem;
-// //   &:hover {
-// //     background: #1d4ed8;
-// //   }
-// // `;
-
-// const SearchCircle = styled.div<{ size: number; opacity: number }>`
-//   position: absolute;
-//   top: 50%;
-//   left: 50%;
-//   width: ${(p) => p.size}px;
-//   height: ${(p) => p.size}px;
-//   border: 2px solid #0ff;
-//   border-radius: 50%;
-//   transform: translate(-50%, -50%);
-//   opacity: ${(p) => p.opacity};
-//   pointer-events: none;
-// `;
-
-// interface OnlineUser {
-//   username: string;
-//   lastActive: number;
-// }
-
-// const TunnelHome = () => {
-//   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-//   const textRef = useRef<HTMLDivElement | null>(null);
-//   const wrapperRef = useRef<HTMLDivElement | null>(null);
-
-//   const [isAnimating, setIsAnimating] = useState(false);
-//   const [animationComplete, setAnimationComplete] = useState(false);
-
-//   const animationStartTimeRef = useRef<number | null>(null);
-
-//   const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-//   const [showSearchWave, setShowSearchWave] = useState(false);
-//   const [searchCircles, setSearchCircles] = useState<
-//     { id: number; size: number; opacity: number }[]
-//   >([]);
-//   const [userPositions, setUserPositions] = useState<
-//     { username: string; x: number; y: number }[]
-//   >([]);
-
-//   // tunnel animarionni yaratamiz
-//   const startAnimation = () => {
-//     if (!isAnimating && !animationComplete) {
-//       setIsAnimating(true);
-//       animationStartTimeRef.current = Date.now();
-//     }
-//   };
-
-//   useEffect(() => {
-//     startAnimation();
-//   }, []);
-
-//   // tunnel animatsiyasi
-//   useEffect(() => {
-//     const canvas = canvasRef.current;
-//     if (!canvas) return;
-//     const ctx = canvas.getContext("2d");
-//     if (!ctx) return;
-
-//     // canvas ni hajmi
-//     const setCanvasSize = () => {
-//       const size = Math.min(window.innerWidth * 0.4, 400);
-//       canvas.width = size;
-//       canvas.height = size;
-//     };
-//     setCanvasSize();
-//     window.addEventListener("resize", setCanvasSize);
-
-//     let animationFrame: number;
-
-//     const drawTunnel = () => {
-//       if (!isAnimating || !animationStartTimeRef.current) return;
-
-//       const width = canvas.width;
-//       const height = canvas.height;
-//       const currentTime = Date.now();
-//       const elapsedTime = currentTime - animationStartTimeRef.current;
-//       const animationDuration = 1800; // taminan 1.8 sekund
-//       const animationProgress = Math.min(elapsedTime / animationDuration, 1);
-
-//       // animatsiyani ochiramiz
-//       ctx.clearRect(0, 0, width, height);
-//       ctx.fillStyle = "#000";
-//       ctx.fillRect(0, 0, width, height);
-
-//       ctx.save();
-//       ctx.translate(width / 2, height / 2);
-
-//       const linesCount = 48;
-//       const stepAngle = (2 * Math.PI) / linesCount;
-//       const radius = width * 0.35;
-
-//       for (let i = 0; i < linesCount; i++) {
-//         const lineProgress = animationProgress * linesCount;
-//         if (i <= lineProgress) {
-//           ctx.save();
-//           ctx.rotate(i * stepAngle);
-
-//           const gradient = ctx.createLinearGradient(0, 0, radius, 0);
-//           gradient.addColorStop(0, "rgba(0, 149, 255, 0.8)");
-//           gradient.addColorStop(1, "rgba(0, 149, 255, 0.1)");
-
-//           ctx.strokeStyle = gradient;
-//           ctx.lineWidth = 1.5;
-
-//           ctx.beginPath();
-//           ctx.moveTo(0, 0);
-
-//           // sekin ease-out
-//           const easeOutCubic = (x: number): number => 1 - Math.pow(1 - x, 3);
-//           const progressEased = easeOutCubic(
-//             Math.min(1, Math.max(0, (animationProgress - i / linesCount) * 3))
-//           );
-//           const lineLength = radius * progressEased;
-
-//           ctx.lineTo(Math.max(0, lineLength), 0);
-//           ctx.stroke();
-//           ctx.restore();
-//         }
-//       }
-
-//       const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
-//       centerGrad.addColorStop(0, "rgba(0, 149, 255, 0.8)");
-//       centerGrad.addColorStop(1, "rgba(0, 149, 255, 0)");
-//       ctx.fillStyle = centerGrad;
-//       ctx.beginPath();
-//       ctx.arc(0, 0, 10, 0, Math.PI * 2);
-//       ctx.fill();
-
-//       if (animationProgress > 0.8) {
-//         const circleOpacity = (animationProgress - 0.8) * 5;
-//         ctx.beginPath();
-//         ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-//         ctx.strokeStyle = `rgba(0, 149, 255, ${circleOpacity * 0.5})`;
-//         ctx.lineWidth = 1.5;
-//         ctx.stroke();
-//       }
-
-//       ctx.restore();
-
-//       if (animationProgress >= 1) {
-//         setIsAnimating(false);
-//         setAnimationComplete(true);
-//         // fade in the text
-//         if (textRef.current) {
-//           animate(
-//             textRef.current,
-//             {
-//               opacity: [0, 1],
-//               transform: ["translateY(20px)", "translateY(0px)"],
-//             },
-//             {
-//               duration: 0.8,
-//               easing: "ease-out",
-//             }
-//           );
-//         }
-//       } else {
-//         animationFrame = requestAnimationFrame(drawTunnel);
-//       }
-//     };
-
-//     if (isAnimating) {
-//       drawTunnel();
-//     }
-
-//     return () => {
-//       window.removeEventListener("resize", setCanvasSize);
-//       if (animationFrame) cancelAnimationFrame(animationFrame);
-//     };
-//   }, [isAnimating]);
-
-//   const handleSearch = async () => {
-//     try {
-//       // wave animatsiyasi
-//       setShowSearchWave(true);
-//       startSearchCircles();
-
-//       // serverdan fetch qilamiz
-//       const res = await fetch("http://localhost:8080/onlineUsers");
-//       const data = await res.json();
-//       // data.users => array of { username, lastActive }
-//       setOnlineUsers(data.users || []);
-
-//       // data kirib kelgandan iconlar ko'rsatamiz
-//       placeUserIcons(data.users);
-//     } catch (err) {
-//       console.error("Failed to fetch online users", err);
-//     }
-//   };
-
-//   // we animate 3 circles expanding from center
-//   const startSearchCircles = () => {
-//     // statega aylana qo'shamiz va ularning olchami asta kattalashib boradi
-//     // keyin esa ularni requestAnimationFrame yoki qisqa setInterval orqali animatsiya qilamiz
-//     const circleConfigs = [0, 1, 2].map((_, i) => ({
-//       id: i,
-//       size: 0,
-//       opacity: 1,
-//     }));
-//     setSearchCircles(circleConfigs);
-
-//     // taxminan 1.5 animatsiya qilamiz
-//     let startTime = Date.now();
-//     let animationId: number;
-
-//     const animateCircles = () => {
-//       const now = Date.now();
-//       const elapsed = now - startTime;
-//       const duration = 1500;
-//       const t = Math.min(elapsed / duration, 1);
-
-//       setSearchCircles((oldCircles) =>
-//         oldCircles.map((c, index) => {
-//           // each circle is offset in time
-//           //  yani: 0, 200ms, 400ms
-//           const delay = index * 200;
-//           const localT = Math.min(Math.max(0, elapsed - delay) / 1000, 1);
-//           const progress = localT;
-//           // it expands up to radius 400 (importtant)
-//           const size = progress * 400;
-//           const opacity = 1 - progress;
-
-//           return {
-//             ...c,
-//             size,
-//             opacity: opacity < 0 ? 0 : opacity,
-//           };
-//         })
-//       );
-
-//       if (t < 1 + 0.5) {
-//         animationId = requestAnimationFrame(animateCircles);
-//       } else {
-//         // keyin esa ularni yashiramiz
-//         setShowSearchWave(false);
-//       }
-//     };
-
-//     animateCircles();
-
-//     // cleanup qilamiz
-//     return () => cancelAnimationFrame(animationId);
-//   };
-
-//   // randomly user icon joylaymiz
-//   const placeUserIcons = (users: OnlineUser[]) => {
-//     if (!wrapperRef.current) return;
-//     const rect = wrapperRef.current.getBoundingClientRect();
-//     const w = rect.width;
-//     const h = rect.height;
-//     const centerX = w / 2;
-//     const centerY = h / 2;
-
-//     const newPositions = users.map((u) => {
-//       const angle = Math.random() * 2 * Math.PI;
-//       // up to 150 px from center
-//       const radius = Math.random() * 150;
-//       const x = centerX + Math.cos(angle) * radius;
-//       const y = centerY + Math.sin(angle) * radius;
-//       return { username: u.username, x, y };
-//     });
-//     setUserPositions(newPositions);
-//     console.log("User positions:", userPositions);
-//   };
-
-//   return (
-//     <Container>
-//       <CanvasWrapper ref={wrapperRef}>
-//         <StyledCanvas ref={canvasRef} />
-//         {animationComplete && (
-//           <TextWrapper ref={textRef} $show={animationComplete}>
-//             <GradientText>:tunnel_chat</GradientText>
-//           </TextWrapper>
-//         )}
-
-//         {/* // search wave animatsiyasi */}
-//         {showSearchWave &&
-//           searchCircles.map((c) => (
-//             <SearchCircle key={c.id} size={c.size} opacity={c.opacity} />
-//           ))}
-//         {userPositions.map((pos) => (
-//           <UserIcon key={pos.username} x={pos.x} y={pos.y} />
-//         ))}
-//       </CanvasWrapper>
-//       <Button variant="add" onClick={handleSearch} position="center">
-//         {" "}
-//         Search Friends
-//       </Button>
-//       {/* <SearchButton onClick={handleSearch}>Search Online Users</SearchButton> */}
-//     </Container>
-//   );
-// };
-
-// export default TunnelHome;
-
-
-import { useRef, useState, useEffect } from "react";
-import { animate } from "motion";
-import styled from "styled-components";
-import Button from "./atoms/Button/Button";
+type OnlineUser = {
+    username: string;
+    lastActive: number;
+};
 
 const UserIcon = styled.div<{ x: number; y: number }>`
-  position: absolute;
-  top: ${(props) => props.y}px;
-  left: ${(props) => props.x}px;
-  width: 20px;
-  height: 20px;
-  background: #0ff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
+    position: absolute;
+    top: ${(props) => props.y}px;
+    left: ${(props) => props.x}px;
+    width: 20px;
+    height: 20px;
+    background: #0ff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
 `;
 
 const Container = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-  background-color: black;
-  overflow: hidden;
-  min-height: 500px; /* Ensure a minimum height for the container */
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    overflow: hidden;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // justify-content: center;
+
+    @media (max-width: 768px) {
+        min-height: 200px;
+        padding: 100px 20px;
+    }
 `;
 
 const CanvasWrapper = styled.div`
-  position: relative;
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 
 const StyledCanvas = styled.canvas`
-  display: block;
-  margin: 0 auto; /* Center canvas horizontally */
+    display: block;
+    margin: 0 auto;
 `;
 
 const TextWrapper = styled.div<{ $show: boolean }>`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  opacity: ${(props) => (props.$show ? 1 : 0)};
-  transition: opacity 0.5s ease-out;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    opacity: ${(props) => (props.$show ? 1 : 0)};
+    transition: opacity 0.5s ease-out;
+
+    @media (max-width: 768px) {
+        top: 90%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+    }
 `;
 
 const GradientText = styled.h1`
-  font-size: 2.5rem;
-  font-weight: bold;
-  font-family: monospace;
-  letter-spacing: 0.1em;
-  white-space: nowrap;
-  background: linear-gradient(to right, #60a5fa, #2563eb);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+    font-size: 2.5rem;
+    font-weight: bold;
+    font-family: monospace;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    background: linear-gradient(to right, #60a5fa, #2563eb);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
 `;
 
 const SearchCircle = styled.div<{ size: number; opacity: number }>`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: ${(p) => p.size}px;
-  height: ${(p) => p.size}px;
-  border: 2px solid #0ff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  opacity: ${(p) => p.opacity};
-  pointer-events: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: ${(p) => p.size}px;
+    height: ${(p) => p.size}px;
+    border: 2px solid #0ff;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: ${(p) => p.opacity};
+    pointer-events: none;
 `;
 
 const StatusMessage = styled.div`
-  position: absolute;
-  bottom: 20px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  color: #0ff;
-  font-family: monospace;
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #0ff;
+    font-family: monospace;
 `;
 
 const UserTooltip = styled.div`
-  position: absolute;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 5px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  pointer-events: none;
-  z-index: 3;
-  transform: translate(-50%, -100%);
-  margin-top: -10px;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 3;
+    transform: translate(-50%, -100%);
+    margin-top: -10px;
 `;
 
-interface OnlineUser {
-  username: string;
-  lastActive: number;
-}
+const ButtonContainer = styled.div`
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 0;
 
-const TunnelHome = () => {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const textRef = useRef<HTMLDivElement | null>(null);
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
-  const socketRef = useRef<WebSocket | null>(null);
-
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animationComplete, setAnimationComplete] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState("Disconnected");
-  const [activeTooltip, setActiveTooltip] = useState<{username: string, x: number, y: number} | null>(null);
-
-  const animationStartTimeRef = useRef<number | null>(null);
-
-  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
-  const [showSearchWave, setShowSearchWave] = useState(false);
-  const [searchCircles, setSearchCircles] = useState<
-    { id: number; size: number; opacity: number }[]
-  >([]);
-  const [userPositions, setUserPositions] = useState<
-    { username: string; x: number; y: number }[]
-  >([]);
-
-  // Connect to WebSocket
-  useEffect(() => {
-    // Create WebSocket connection
-    socketRef.current = new WebSocket("ws://localhost:8080");
-    
-    socketRef.current.onopen = () => {
-      setConnectionStatus("Connected to server");
-      console.log("WebSocket connected");
-      
-      // You can send an initial message to identify the client if needed
-      if (socketRef.current) {
-        socketRef.current.send(JSON.stringify({
-          type: 'SET_USERNAME',
-          username: 'TunnelVisitor_' + Math.floor(Math.random() * 1000)
-        }));
-      }
-    };
-    
-    socketRef.current.onclose = () => {
-      setConnectionStatus("Disconnected from server");
-      console.log("WebSocket disconnected");
-    };
-    
-    socketRef.current.onerror = (error) => {
-      setConnectionStatus("Connection error");
-      console.error("WebSocket error:", error);
-    };
-    
-    socketRef.current.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        console.log("Received message:", data);
-        
-        // Handle different message types
-        if (data.type === 'ONLINE_USERS_UPDATE') {
-          setOnlineUsers(data.users || []);
-          // When we get users update, update the visualization
-          placeUserIcons(data.users);
-        }
-      } catch (error) {
-        console.error("Error parsing WebSocket message:", error);
-      }
-    };
-    
-    return () => {
-      // Close connection when component unmounts
-      if (socketRef.current) {
-        socketRef.current.close();
-      }
-    };
-  }, []);
-
-  // tunnel animation
-  const startAnimation = () => {
-    if (!isAnimating && !animationComplete) {
-      setIsAnimating(true);
-      animationStartTimeRef.current = Date.now();
+    @media (max-width: 768px) {
+        margin-top: 100px;
     }
-  };
+`;
 
-  useEffect(() => {
-    startAnimation();
-  }, []);
+const SearchButton = styled.button`
+    position: relative;
+    padding: 12px 28px;
+    background: linear-gradient(90deg, rgb(0, 85, 189), rgb(97, 158, 255));
+    color: white;
+    font-family: monospace;
+    font-size: 15px;
+    font-weight: 400;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(47, 168, 255, 0.3);
 
-  // tunnel animation effect
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.4s ease;
+    }
 
-    // canvas size
-    const setCanvasSize = () => {
-      const size = Math.min(window.innerWidth * 0.4, 400);
-      canvas.width = size;
-      canvas.height = size;
-    };
-    setCanvasSize();
-    window.addEventListener("resize", setCanvasSize);
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0, 149, 255, 0.4);
 
-    let animationFrame: number;
-
-    const drawTunnel = () => {
-      if (!isAnimating || !animationStartTimeRef.current) return;
-
-      const width = canvas.width;
-      const height = canvas.height;
-      const currentTime = Date.now();
-      const elapsedTime = currentTime - animationStartTimeRef.current;
-      const animationDuration = 1800; // approximately 1.8 seconds
-      const animationProgress = Math.min(elapsedTime / animationDuration, 1);
-
-      // clear the animation
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, width, height);
-
-      ctx.save();
-      ctx.translate(width / 2, height / 2);
-
-      const linesCount = 48;
-      const stepAngle = (2 * Math.PI) / linesCount;
-      const radius = width * 0.35;
-
-      for (let i = 0; i < linesCount; i++) {
-        const lineProgress = animationProgress * linesCount;
-        if (i <= lineProgress) {
-          ctx.save();
-          ctx.rotate(i * stepAngle);
-
-          const gradient = ctx.createLinearGradient(0, 0, radius, 0);
-          gradient.addColorStop(0, "rgba(0, 149, 255, 0.8)");
-          gradient.addColorStop(1, "rgba(0, 149, 255, 0.1)");
-
-          ctx.strokeStyle = gradient;
-          ctx.lineWidth = 1.5;
-
-          ctx.beginPath();
-          ctx.moveTo(0, 0);
-
-          // smooth ease-out
-          const easeOutCubic = (x: number): number => 1 - Math.pow(1 - x, 3);
-          const progressEased = easeOutCubic(
-            Math.min(1, Math.max(0, (animationProgress - i / linesCount) * 3))
-          );
-          const lineLength = radius * progressEased;
-
-          ctx.lineTo(Math.max(0, lineLength), 0);
-          ctx.stroke();
-          ctx.restore();
+        &:before {
+            left: 100%;
         }
-      }
+    }
 
-      const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
-      centerGrad.addColorStop(0, "rgba(0, 149, 255, 0.8)");
-      centerGrad.addColorStop(1, "rgba(0, 149, 255, 0)");
-      ctx.fillStyle = centerGrad;
-      ctx.beginPath();
-      ctx.arc(0, 0, 10, 0, Math.PI * 2);
-      ctx.fill();
+    &:active {
+        transform: translateY(1px);
+        box-shadow: 0 2px 8px rgba(0, 149, 255, 0.3);
+    }
+`;
 
-      if (animationProgress > 0.8) {
-        const circleOpacity = (animationProgress - 0.8) * 5;
-        ctx.beginPath();
-        ctx.arc(0, 0, radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = `rgba(0, 149, 255, ${circleOpacity * 0.5})`;
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
+const ButtonContent = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+`;
 
-      ctx.restore();
+const PulsingDot = styled.div`
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #0ff;
+    animation: pulse 1.5s infinite;
 
-      if (animationProgress >= 1) {
-        setIsAnimating(false);
-        setAnimationComplete(true);
-        // fade in the text
-        if (textRef.current) {
-          animate(
-            textRef.current,
-            {
-              opacity: [0, 1],
-              transform: ["translateY(20px)", "translateY(0px)"],
-            },
-            {
-              duration: 0.8,
-              easing: "ease-out",
+    @keyframes pulse {
+        0% {
+            transform: scale(0.8);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.2);
+            opacity: 1;
+        }
+        100% {
+            transform: scale(0.8);
+            opacity: 0.7;
+        }
+    }
+`;
+
+/**
+ * TunnelHome - Main component for the tunnel chat
+ * This component handles the animation of the tunnel, the connection to the WebSocket server,
+ * and the display of online users.
+ */
+export default function TunnelHome() {
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const textRef = useRef<HTMLDivElement | null>(null);
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const socketRef = useRef<WebSocket | null>(null);
+
+    const [isAnimating, setIsAnimating] = useState(false);
+    const [animationComplete, setAnimationComplete] = useState(false);
+    const [connectionStatus, setConnectionStatus] = useState('Disconnected');
+    const [activeTooltip, setActiveTooltip] = useState<{
+        username: string;
+        x: number;
+        y: number;
+    } | null>(null);
+
+    const animationStartTimeRef = useRef<number | null>(null);
+
+    const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
+    const [showSearchWave, setShowSearchWave] = useState(false);
+    const [searchCircles, setSearchCircles] = useState<{ id: number; size: number; opacity: number }[]>([]);
+    const [userPositions, setUserPositions] = useState<{ username: string; x: number; y: number }[]>([]);
+    const [titleShow, setTitleShow] = useState(true);
+
+    useEffect(() => {
+        socketRef.current = new WebSocket('ws://localhost:8080');
+
+        socketRef.current.onopen = () => {
+            setConnectionStatus('Connected to server');
+            console.log('WebSocket connected');
+
+            if (socketRef.current) {
+                socketRef.current.send(
+                    JSON.stringify({
+                        type: 'SET_USERNAME',
+                        username: 'TunnelVisitor_' + Math.floor(Math.random() * 1000),
+                    }),
+                );
             }
-          );
+        };
+
+        socketRef.current.onclose = () => {
+            setConnectionStatus('Disconnected from server');
+            console.log('WebSocket disconnected');
+        };
+
+        socketRef.current.onerror = (error) => {
+            setConnectionStatus('Connection error');
+            console.error('WebSocket error:', error);
+        };
+
+        socketRef.current.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                console.log('Received message:', data);
+
+                if (data.type === 'ONLINE_USERS_UPDATE') {
+                    setOnlineUsers(data.users || []);
+                    // when we get users update, update the visualization
+                    placeRandomUserIcons(data.users);
+                }
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
+
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.close();
+            }
+        };
+    }, []);
+
+    const startAnimation = () => {
+        if (!isAnimating && !animationComplete) {
+            setIsAnimating(true);
+            animationStartTimeRef.current = Date.now();
         }
-      } else {
-        animationFrame = requestAnimationFrame(drawTunnel);
-      }
     };
 
-    if (isAnimating) {
-      drawTunnel();
-    }
+    useEffect(() => {
+        startAnimation();
+    }, []);
 
-    return () => {
-      window.removeEventListener("resize", setCanvasSize);
-      if (animationFrame) cancelAnimationFrame(animationFrame);
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const setCanvasSize = () => {
+            const size = Math.min(window.innerWidth * 0.4, 400);
+            canvas.width = size;
+            canvas.height = size;
+        };
+        setCanvasSize();
+        window.addEventListener('resize', setCanvasSize);
+
+        let animationFrame: number;
+
+        const drawTunnel = () => {
+            if (!isAnimating || !animationStartTimeRef.current) return;
+
+            const width = canvas.width;
+            const height = canvas.height;
+            const currentTime = Date.now();
+            const elapsedTime = currentTime - animationStartTimeRef.current;
+            const animationDuration = 1800;
+            const animationProgress = Math.min(elapsedTime / animationDuration, 1);
+
+            // animatsiyani clear qilamiz
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.translate(width / 2, height / 2);
+
+            const linesCount = 48;
+            const stepAngle = (2 * Math.PI) / linesCount;
+            const radius = width * 0.35;
+
+            for (let i = 0; i < linesCount; i++) {
+                const lineProgress = animationProgress * linesCount;
+                if (i <= lineProgress) {
+                    ctx.save();
+                    ctx.rotate(i * stepAngle);
+
+                    const gradient = ctx.createLinearGradient(0, 0, radius, 0);
+                    gradient.addColorStop(0, 'rgba(0, 149, 255, 0.8)');
+                    gradient.addColorStop(1, 'rgba(0, 149, 255, 0.1)');
+
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = 1.5;
+
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+
+                    // smooth ease-out
+                    const easeOutCubic = (x: number): number => 1 - Math.pow(1 - x, 3);
+                    const progressEased = easeOutCubic(
+                        Math.min(1, Math.max(0, (animationProgress - i / linesCount) * 3)),
+                    );
+                    const lineLength = radius * progressEased;
+
+                    ctx.lineTo(Math.max(0, lineLength), 0);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+
+            const centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 10);
+            centerGrad.addColorStop(0, 'rgba(0, 149, 255, 0.8)');
+            centerGrad.addColorStop(1, 'rgba(0, 149, 255, 0)');
+            ctx.fillStyle = centerGrad;
+            ctx.beginPath();
+            ctx.arc(0, 0, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (animationProgress > 0.8) {
+                const circleOpacity = (animationProgress - 0.8) * 5;
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = `rgba(0, 149, 255, ${circleOpacity * 0.5})`;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            if (animationProgress >= 1) {
+                setIsAnimating(false);
+                setAnimationComplete(true);
+                if (textRef.current) {
+                    animate(
+                        textRef.current,
+                        {
+                            opacity: [0, 1],
+                            transform: ['translateY(20px)', 'translateY(0px)'],
+                        },
+                        {
+                            duration: 0.8,
+                            easing: 'ease-out',
+                        },
+                    );
+                }
+            } else {
+                animationFrame = requestAnimationFrame(drawTunnel);
+            }
+        };
+
+        if (isAnimating) {
+            drawTunnel();
+        }
+
+        return () => {
+            window.removeEventListener('resize', setCanvasSize);
+            if (animationFrame) cancelAnimationFrame(animationFrame);
+        };
+    }, [isAnimating]);
+
+    const handleSearch = async () => {
+        try {
+            setTitleShow(false);
+            setShowSearchWave(true);
+            startSearchCircles();
+
+            // Update the URL to match your Express backend route
+            const res = await fetch('http://localhost:8080/api/onlineUsers', {
+                method: 'GET',
+            });
+
+            if (!res.ok) {
+                throw new Error(`Server responded with status: ${res.status}`);
+            }
+
+            const data = await res.json();
+            setOnlineUsers(data.users || []);
+            placeRandomUserIcons(data.users || []);
+            setConnectionStatus(`${data.onlineCount || 0} users online`);
+        } catch (err) {
+            console.error('Failed to fetch online users', err);
+            setOnlineUsers([]);
+            setConnectionStatus('Failed to fetch users: ' + (err instanceof Error ? err.message : 'Unknown error'));
+        }
     };
-  }, [isAnimating]);
 
-  const handleSearch = async () => {
-    try {
-      // wave animation
-      setShowSearchWave(true);
-      startSearchCircles();
+    // 3 ta aylana animatsiyasini yaratamiz
+    const startSearchCircles = () => {
+        const circleConfigs = [0, 1, 2].map((_, i) => ({
+            id: i,
+            size: 0,
+            opacity: 1,
+        }));
+        setSearchCircles(circleConfigs);
 
-      // fetch from server
-      const res = await fetch("http://localhost:8080/onlineUsers");
-      const data = await res.json();
-      // data.users => array of { username, lastActive }
-      setOnlineUsers(data.users || []);
+        const startTime = Date.now();
+        let animationId: number;
 
-      // place user icons
-      placeUserIcons(data.users);
-    } catch (err) {
-      console.error("Failed to fetch online users", err);
-      setConnectionStatus("Failed to fetch users");
-    }
-  };
+        const animateCircles = () => {
+            const now = Date.now();
+            const elapsed = now - startTime;
+            const duration = 1500;
+            const t = Math.min(elapsed / duration, 1);
 
-  // animate 3 circles expanding from center
-  const startSearchCircles = () => {
-    const circleConfigs = [0, 1, 2].map((_, i) => ({
-      id: i,
-      size: 0,
-      opacity: 1,
-    }));
-    setSearchCircles(circleConfigs);
+            setSearchCircles((oldCircles) =>
+                oldCircles.map((c, index) => {
+                    // har bir aylana vaqt bo'yicha offset
+                    // 0, 200ms, 400ms delay
+                    const delay = index * 200;
+                    const localT = Math.min(Math.max(0, elapsed - delay) / 1000, 1);
+                    const progress = localT;
+                    // radius 400 ga yetadi
+                    const size = progress * 400;
+                    const opacity = 1 - progress;
 
-    // approximately 1.5s animation
-    let startTime = Date.now();
-    let animationId: number;
+                    return {
+                        ...c,
+                        size,
+                        opacity: opacity < 0 ? 0 : opacity,
+                    };
+                }),
+            );
 
-    const animateCircles = () => {
-      const now = Date.now();
-      const elapsed = now - startTime;
-      const duration = 1500;
-      const t = Math.min(elapsed / duration, 1);
+            if (t < 1 + 0.5) {
+                animationId = requestAnimationFrame(animateCircles);
+            } else {
+                // animatsiya tugallanganda aylanalarni yashirish
+                setShowSearchWave(false);
 
-      setSearchCircles((oldCircles) =>
-        oldCircles.map((c, index) => {
-          // each circle is offset in time
-          // 0, 200ms, 400ms delay
-          const delay = index * 200;
-          const localT = Math.min(Math.max(0, elapsed - delay) / 1000, 1);
-          const progress = localT;
-          // it expands up to radius 400
-          const size = progress * 400;
-          const opacity = 1 - progress;
+                setTimeout(() => {
+                    setTitleShow(true);
+                }, 800);
+            }
+        };
 
-          return {
-            ...c,
-            size,
-            opacity: opacity < 0 ? 0 : opacity,
-          };
-        })
-      );
-
-      if (t < 1 + 0.5) {
-        animationId = requestAnimationFrame(animateCircles);
-      } else {
-        // hide circles when done
-        setShowSearchWave(false);
-      }
+        animateCircles();
+        return () => cancelAnimationFrame(animationId);
     };
 
-    animateCircles();
+    const placeRandomUserIcons = (users: OnlineUser[]) => {
+        if (!wrapperRef.current) return;
+        const rect = wrapperRef.current.getBoundingClientRect();
+        const w = rect.width;
+        const h = rect.height;
+        const centerX = w / 2;
+        const centerY = h / 2;
 
-    // cleanup
-    return () => cancelAnimationFrame(animationId);
-  };
+        const newPositions = users.map((u) => {
+            const angle = Math.random() * 2 * Math.PI;
+            // markazdan 150px masofada
+            const radius = Math.random() * 150;
+            const x = centerX + Math.cos(angle) * radius;
+            const y = centerY + Math.sin(angle) * radius;
+            return { username: u.username, x, y };
+        });
+        setUserPositions(newPositions);
+        console.log('User positions:', newPositions);
+    };
 
-  // randomly place user icons
-  const placeUserIcons = (users: OnlineUser[]) => {
-    if (!wrapperRef.current) return;
-    const rect = wrapperRef.current.getBoundingClientRect();
-    const w = rect.width;
-    const h = rect.height;
-    const centerX = w / 2;
-    const centerY = h / 2;
+    // user iconlarni hover qilganda
+    const handleUserHover = (username: string, x: number, y: number) => {
+        setActiveTooltip({ username, x, y });
+    };
 
-    const newPositions = users.map((u) => {
-      const angle = Math.random() * 2 * Math.PI;
-      // up to 150 px from center
-      const radius = Math.random() * 150;
-      const x = centerX + Math.cos(angle) * radius;
-      const y = centerY + Math.sin(angle) * radius;
-      return { username: u.username, x, y };
-    });
-    setUserPositions(newPositions);
-    console.log("User positions:", newPositions);
-  };
+    // user iconlarni hoverdan chiqganda
+    const handleUserLeave = () => {
+        setActiveTooltip(null);
+    };
 
-  // Handle hover on user icons
-  const handleUserHover = (username: string, x: number, y: number) => {
-    setActiveTooltip({ username, x, y });
-  };
+    // private chatni boshlash
+    const startPrivateChat = (username: string) => {
+        if (socketRef.current) {
+            socketRef.current.send(
+                JSON.stringify({
+                    type: 'PRIVATE_CHAT_REQUEST',
+                    targetUser: username,
+                }),
+            );
+            setConnectionStatus(`Sent chat request to ${username}`);
+        }
+    };
 
-  // Handle mouse leave
-  const handleUserLeave = () => {
-    setActiveTooltip(null);
-  };
+    return (
+        <Container>
+            <CanvasWrapper ref={wrapperRef}>
+                <StyledCanvas ref={canvasRef} />
+                {animationComplete && titleShow && (
+                    <TextWrapper ref={textRef} $show={animationComplete}>
+                        <GradientText>:tunnel_chat</GradientText>
+                    </TextWrapper>
+                )}
 
-  // Start a private chat with a user
-  const startPrivateChat = (username: string) => {
-    if (socketRef.current) {
-      socketRef.current.send(JSON.stringify({
-        type: 'PRIVATE_CHAT_REQUEST',
-        targetUser: username
-      }));
-      setConnectionStatus(`Sent chat request to ${username}`);
-    }
-  };
+                {/* to'lqin animatsiyasini yaratamiz */}
+                {showSearchWave &&
+                    searchCircles.map((c) => <SearchCircle key={c.id} size={c.size} opacity={c.opacity} />)}
 
-  return (
-    <Container>
-      <CanvasWrapper ref={wrapperRef}>
-        <StyledCanvas ref={canvasRef} />
-        {animationComplete && (
-          <TextWrapper ref={textRef} $show={animationComplete}>
-            <GradientText>:tunnel_chat</GradientText>
-          </TextWrapper>
-        )}
+                {/* user iconlarni yaratamiz */}
+                {userPositions.map((pos) => (
+                    <UserIcon
+                        key={pos.username}
+                        x={pos.x}
+                        y={pos.y}
+                        onMouseEnter={() => handleUserHover(pos.username, pos.x, pos.y)}
+                        onMouseLeave={handleUserLeave}
+                        onClick={() => startPrivateChat(pos.username)}
+                        style={{ cursor: 'pointer' }}
+                    />
+                ))}
 
-        {/* search wave animation */}
-        {showSearchWave &&
-          searchCircles.map((c) => (
-            <SearchCircle key={c.id} size={c.size} opacity={c.opacity} />
-          ))}
-        
-        {/* user icons */}
-        {userPositions.map((pos) => (
-          <UserIcon 
-            key={pos.username} 
-            x={pos.x} 
-            y={pos.y} 
-            onMouseEnter={() => handleUserHover(pos.username, pos.x, pos.y)}
-            onMouseLeave={handleUserLeave}
-            onClick={() => startPrivateChat(pos.username)}
-            style={{ cursor: 'pointer' }}
-          />
-        ))}
-        
-        {/* tooltip for hovering over users */}
-        {activeTooltip && (
-          <UserTooltip 
-            style={{ 
-              left: `${activeTooltip.x}px`, 
-              top: `${activeTooltip.y}px` 
-            }}
-          >
-            {activeTooltip.username}
-          </UserTooltip>
-        )}
-      </CanvasWrapper>
-      
-      <Button variant="add" onClick={handleSearch} position="center">
-        Search Friends
-      </Button>
-      
-      <StatusMessage>
-        {connectionStatus} • {onlineUsers.length > 0 ? `${onlineUsers.length} users online` : 'No users found'}
-      </StatusMessage>
-    </Container>
-  );
-};
-
-export default TunnelHome;
+                {/* user iconlarni hover qilganda */}
+                {activeTooltip && (
+                    <UserTooltip
+                        style={{
+                            left: `${activeTooltip.x}px`,
+                            top: `${activeTooltip.y}px`,
+                        }}
+                    >
+                        {activeTooltip.username}
+                    </UserTooltip>
+                )}
+            </CanvasWrapper>
+            <ButtonContainer>
+                <SearchButton onClick={handleSearch}>
+                    <ButtonContent>
+                        <PulsingDot />
+                        Find friends
+                    </ButtonContent>
+                </SearchButton>
+            </ButtonContainer>
+            <StatusMessage>
+                {connectionStatus} • {onlineUsers.length > 0 ? `${onlineUsers.length} users online` : 'No users found'}
+            </StatusMessage>
+        </Container>
+    );
+}
