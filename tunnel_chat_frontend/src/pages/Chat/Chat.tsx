@@ -6,26 +6,11 @@ import { useParams } from 'react-router-dom';
 import { message } from 'antd';
 import RoomJoin from '@/components/Notification/RoomJoin';
 import WebSocketService from '@/socket/websocket';
+import { AuthHandlerData, Message, MessageHandlerData, RoomInfo } from '@/types';
 
 const EVENT_HANDLERS = {
     AUTH: ['AUTH_RESPONSE', 'USERNAME_SET'],
     MESSAGES: ['MESSAGE', 'ROOM_JOINED', 'USER_JOINED', 'USER_LEFT', 'CHAT'],
-};
-
-type RoomInfo = {
-    id: string;
-    name: string;
-    activeUsers: number;
-    messageCount: number;
-    isPrivate: boolean;
-    isEncrypted: boolean;
-};
-
-type Message = {
-    text: string;
-    isMine: boolean;
-    isSystem?: boolean;
-    timestamp?: Date;
 };
 
 const ChatContainer = styled.div`
@@ -233,8 +218,8 @@ export default function Chat() {
     const username = localStorage.getItem('username') || 'Anonymous';
     const hasJoinedRef = useRef(false);
     const handlersRef = useRef({
-        messages: null as ((data: any) => void) | null,
-        auth: null as ((data: any) => void) | null,
+        messages: null as ((data: MessageHandlerData) => void) | null,
+        auth: null as ((data: AuthHandlerData) => void) | null,
     });
     const [shownNotifications, setShownNotifications] = useState<Set<string>>(new Set());
 
@@ -406,13 +391,6 @@ export default function Chat() {
 
         setupWebSocketEventListener(ws, EVENT_HANDLERS.AUTH, handleAuth, 'add');
         setupWebSocketEventListener(ws, EVENT_HANDLERS.MESSAGES, handleMessages, 'add');
-        // ws.addListener('AUTH_RESPONSE', handleAuth);
-        // ws.addListener('USERNAME_SET', handleAuth);
-        // ws.addListener('MESSAGE', handleMessages);
-        // ws.addListener('ROOM_JOINED', handleMessages);
-        // ws.addListener('USER_JOINED', handleMessages);
-        // ws.addListener('USER_LEFT', handleMessages);
-        // ws.addListener('CHAT', handleMessages);
 
         return () => {
             //  we clean up the listeners safely
@@ -422,13 +400,6 @@ export default function Chat() {
             if (handlersRef.current.messages) {
                 setupWebSocketEventListener(ws, EVENT_HANDLERS.MESSAGES, handlersRef.current.messages, 'remove');
             }
-            // ws.removeListener('AUTH_RESPONSE', handleAuth);
-            // ws.removeListener('USERNAME_SET', handleAuth);
-            // ws.removeListener('MESSAGE', handleMessages);
-            // ws.removeListener('ROOM_JOINED', handleMessages);
-            // ws.removeListener('USER_JOINED', handleMessages);
-            // ws.removeListener('USER_LEFT', handleMessages);
-            // ws.removeListener('CHAT', handleMessages);
         };
     }, [roomId, username]);
 
