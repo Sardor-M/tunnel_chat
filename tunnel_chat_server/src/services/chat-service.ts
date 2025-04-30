@@ -1,6 +1,6 @@
 import { db } from '../db';
 import { users, rooms, roomMembers, messages } from '../db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, sql } from 'drizzle-orm';
 import { ChatMessage } from '../types';
 
 /**
@@ -92,5 +92,24 @@ export const chatService = {
             // i added the nullish coalescing operator here (i need to be review this)
             encryptionKey: room.encryptionKey ?? undefined,
         };
+    },
+
+    /**
+     * Gets the total number of messages in a room
+     */
+    async getRoomMessageCount(roomId: string): Promise<number> {
+        try {
+            const result = await db
+                .select({ count: sql`count(*)` })
+                .from(messages)
+                .where(eq(messages.roomId, roomId));
+
+            const count = result[0]?.count;
+
+            return typeof count === 'number' ? count : 0;
+        } catch (error) {
+            console.error(`Error counting messages for room ${roomId}:`, error);
+            return 0;
+        }
     },
 };

@@ -14,6 +14,7 @@ export type Room = {
     name: string;
     members: string[];
     isPrivate: false;
+    isEncrypted?: boolean;
     createdAt: number;
 };
 

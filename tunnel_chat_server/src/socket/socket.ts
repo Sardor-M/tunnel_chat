@@ -3,6 +3,7 @@ import http from 'http';
 import { validateToken } from '../utils/token-validator';
 import { roomService } from '../services/room-service';
 import { chatService } from '../services/chat-service';
+import { randomUUID } from 'crypto';
 
 type WebSocketClient = WebSocket & {
     isAlive: boolean;
@@ -40,6 +41,9 @@ export function setupWebSocket(server: http.Server): WebSocketServer {
                 switch (data.type) {
                     case 'AUTH':
                         handleAuthentication(wsClient, data);
+                        break;
+                    case 'SET_USERNAME':
+                        handleSetUsername(wsClient, data);
                         break;
 
                     case 'JOIN_ROOM':
@@ -102,24 +106,27 @@ export function setupWebSocket(server: http.Server): WebSocketServer {
     });
 
     // periodically check for inactive clients
-    setInterval(() => {
-        const now = Date.now();
-        const inactiveThreshold = 30 * 60 * 1000;
+    setInterval(
+        () => {
+            const now = Date.now();
+            const inactiveThreshold = 30 * 60 * 1000;
 
-        for (const username in connectedClients) {
-            const client = connectedClients[username];
-            if (now - client.lastActive > inactiveThreshold) {
-                console.log(`Removing inactive client: ${username}`);
+            for (const username in connectedClients) {
+                const client = connectedClients[username];
+                if (now - client.lastActive > inactiveThreshold) {
+                    console.log(`Removing inactive client: ${username}`);
 
-                if (client.readyState === WebSocket.OPEN) {
-                    client.close();
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.close();
+                    }
+                    // remove from tracked rooms
+                    delete connectedClients[username];
                 }
-                // remove from tracked rooms
-                delete connectedClients[username];
             }
-        }
-        // run every 10 minutes
-    }, 10 * 60 * 1000);
+            // run every 10 minutes
+        },
+        10 * 60 * 1000,
+    );
 
     return wss;
 }
@@ -158,6 +165,32 @@ async function handleAuthentication(ws: WebSocketClient, data: any) {
     }
 }
 
+function handleSetUsername(ws: WebSocketClient, data: any) {
+    const { username } = data;
+
+    if (!username) {
+        sendErrorToClient(ws, 'Username is required');
+        return;
+    }
+
+    console.log(`Setting username for client: ${username}`);
+
+    ws.username = username;
+    ws.lastActive = Date.now();
+
+    if (!connectedClients[username]) {
+        connectedClients[username] = ws;
+    }
+
+    ws.send(
+        JSON.stringify({
+            type: 'USERNAME_SET',
+            username,
+            success: true,
+        }),
+    );
+}
+
 /**
  * Handle joining a room:
  * This function allows a user to join a room and notifies other members.
@@ -188,16 +221,59 @@ async function handleJoinRoom(ws: WebSocketClient, data: any) {
         ws.rooms.push(roomId);
     }
     ws.lastActive = Date.now();
+
+    // get the room count for accurate active user dat
+    const members = await roomService.getRoomMembers(roomId);
+    const activeUsers = members ? members.length : 1;
+
+    // get message count from chat service
+    const messageCount = await chatService.getRoomMessageCount(roomId);
+
+    // now we send more detailed data
     ws.send(
         JSON.stringify({
             type: 'ROOM_JOINED',
             roomId,
+            roomName: result.room?.name,
             room: result.room,
             encryptionKey: result.encryptionKey,
+            activeUsers,
+            messageCount,
+            isPrivate: result.room?.isPrivate,
+            isEncrypted: result.room?.isEncrypted || false,
         }),
     );
-    broadcastToRoom(roomId, 'system', `${ws.username} joined the room`);
+    notifyRoomMembersOfJoin(roomId, ws.username, activeUsers);
+
     console.log(`User ${ws.username} successfully joined room: ${roomId}`);
+}
+
+async function notifyRoomMembersOfJoin(roomId: string, username: string, activeUsers: number) {
+    const members = await roomService.getRoomMembers(roomId);
+
+    if (!members) {
+        return;
+    }
+
+    members.forEach((memberUsername) => {
+        if (memberUsername !== username) {
+            // Don't notify the user who joined
+            const client = connectedClients[memberUsername];
+            if (client && client.readyState === WebSocket.OPEN) {
+                client.send(
+                    JSON.stringify({
+                        type: 'USER_JOINED',
+                        roomId,
+                        username,
+                        activeUsers,
+                    }),
+                );
+            }
+        }
+    });
+
+    // then we send a system message to all members
+    broadcastToRoom(roomId, 'system', `${username} joined the room`);
 }
 
 /**
@@ -263,7 +339,8 @@ function handleChatMessage(ws: WebSocketClient, data: any) {
     console.log(`Message from ${ws.username} in room ${roomId}`);
     ws.lastActive = Date.now();
 
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const messageId = randomUUID();
+
     const chatMessage = {
         id: messageId,
         roomId,
@@ -273,8 +350,30 @@ function handleChatMessage(ws: WebSocketClient, data: any) {
         isEncrypted: isEncrypted || false,
     };
 
-    chatService.addMessageToHistory(chatMessage);
-    broadcastToRoom(roomId, ws.username, message, isEncrypted);
+    chatService
+        .addMessageToHistory(chatMessage)
+        .then(() => {
+            if (ws.username) {
+                broadcastToRoom(roomId, ws.username, message, isEncrypted);
+            }
+        })
+        .catch((error) => {
+            console.error('Error saving message:', error);
+            sendErrorToClient(ws, 'Failed to save message');
+        });
+
+    // sending a confirmation to the sender
+    ws.send(
+        JSON.stringify({
+            type: 'CHAT',
+            id: messageId,
+            roomId,
+            sender: ws.username,
+            message: message,
+            timestamp: Date.now(),
+            isEncrypted: isEncrypted || false,
+        }),
+    );
 }
 
 /**
@@ -343,9 +442,12 @@ async function broadcastToRoom(
         return;
     }
 
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    const messageId = randomUUID();
 
     members.forEach((username) => {
+        // we skip sending to the sender as they will get their own copy
+        if (username === sender) return;
+
         const client = connectedClients[username];
         if (client && client.readyState === WebSocket.OPEN) {
             client.send(
