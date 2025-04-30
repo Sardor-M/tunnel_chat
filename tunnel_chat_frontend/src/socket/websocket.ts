@@ -161,7 +161,11 @@ class WebSocketService {
         }
 
         try {
-            this.socket.send(JSON.stringify(data));
+            if (typeof data === 'object') {
+                this.socket.send(JSON.stringify(data));
+            } else {
+                this.socket.send(data);
+            }
             return true;
         } catch (error) {
             console.error('Error sending WebSocket message:', error);
@@ -178,16 +182,47 @@ class WebSocketService {
             return false;
         }
 
+        const username = authService.getUsername() || 'anonymous';
+
         const result = this.send({
             type: 'JOIN_ROOM',
             roomId,
+            username,
         });
 
         if (result) {
             this.currentRooms.add(roomId);
+            console.log(`Sent JOIN_ROOM message for room: ${roomId}`);
+
+            const roomJoinedHandler = (data: any) => {
+                if (data.roomId === roomId) {
+                    console.log(`Successfully joined room: ${data.roomName || roomId}`);
+                }
+            };
+
+            // clean up old listener
+            this.removeListener('ROOM_JOINED', roomJoinedHandler);
+
+            // adding the new listener
+            this.addListener('ROOM_JOINED', roomJoinedHandler);
         }
 
         return result;
+    }
+
+    public listenToRoom(roomId: string, callback: Function): () => void {
+        const messageHandler = (data: any) => {
+            if (data.type === 'CHAT' && data.roomId === roomId) {
+                callback(data);
+            }
+        };
+
+        this.addListener('MESSAGE', messageHandler);
+
+        // return function to remove the listener
+        return () => {
+            this.removeListener('MESSAGE', messageHandler);
+        };
     }
 
     /**
