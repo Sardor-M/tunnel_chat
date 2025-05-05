@@ -46,7 +46,7 @@ router.post('/rooms/join', authMiddleware, joinRoom);
 router.post('/rooms/leave', authMiddleware, leaveRoom);
 router.get('/rooms/:roomId/members', authMiddleware, getRoomMembers);
 router.get('/chat/:roomId/history', authMiddleware, getMessageHistory);
-router.get('/users/online', authMiddleware, getOnlineUsers);
+router.get('/users/online', getOnlineUsers);
 
 router.post('/files/upload', authMiddleware, upload.single('file'), uploadFile);
 router.get('/files/:fileId', authMiddleware, downloadFile);

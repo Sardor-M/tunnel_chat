@@ -45,23 +45,21 @@ export function setupWebSocket(server: http.Server): WebSocketServer {
                     case 'SET_USERNAME':
                         handleSetUsername(wsClient, data);
                         break;
-
+                    case 'GET_ONLINE_USERS':
+                        handleGetOnlineUsers(wsClient);
+                        break;
                     case 'JOIN_ROOM':
                         handleJoinRoom(wsClient, data);
                         break;
-
                     case 'LEAVE_ROOM':
                         handleLeaveRoom(wsClient, data);
                         break;
-
                     case 'CHAT':
                         handleChatMessage(wsClient, data);
                         break;
-
                     case 'FILE_TRANSFER':
                         handleFileTransfer(wsClient, data);
                         break;
-
                     default:
                         console.log(`Unknown message type: ${data.type}`);
                 }
@@ -162,6 +160,43 @@ async function handleAuthentication(ws: WebSocketClient, data: any) {
         console.log(`Client authenticated as: ${result.username}`);
     } else {
         sendErrorToClient(ws, result.error || 'Invalid token');
+    }
+}
+
+/**
+ * Handle request for online users:
+ * This function responds with a list of all online users when requested.
+ */
+function handleGetOnlineUsers(ws: WebSocketClient) {
+    console.log('Handling GET_ONLINE_USERS request');
+
+    // check if the client is authenticated
+    if (!ws.username) {
+        sendErrorToClient(ws, 'Authentication required');
+        return;
+    }
+
+    // update  client last active time
+    ws.lastActive = Date.now();
+
+    try {
+        // get the list of online users
+        const onlineUsers = Object.keys(connectedClients).map((username) => ({
+            username,
+            lastActive: connectedClients[username].lastActive,
+        }));
+
+        console.log(`Found ${onlineUsers.length} online users:`, onlineUsers);
+
+        ws.send(
+            JSON.stringify({
+                type: 'ONLINE_USERS_UPDATE',
+                users: onlineUsers,
+            }),
+        );
+    } catch (error) {
+        console.error('Error getting online users:', error);
+        sendErrorToClient(ws, 'Failed to get online users');
     }
 }
 
