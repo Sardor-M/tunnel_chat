@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { animate } from 'motion';
 import styled from 'styled-components';
+import WebSocketService from '@/socket/websocket';
 
 type OnlineUser = {
     username: string;
@@ -17,6 +18,9 @@ const UserIcon = styled.div<{ x: number; y: number }>`
     border-radius: 50%;
     transform: translate(-50%, -50%);
     z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 `;
 
 const Container = styled.div`
@@ -198,27 +202,30 @@ const PulsingDot = styled.div`
     }
 `;
 
+const UserLabel = styled.div`
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: transparent;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 3;
+`;
+
 /**
  * TunnelHome - Main component for the tunnel chat
  * This component handles the animation of the tunnel, the connection to the WebSocket server,
  * and the display of online users.
  */
 export default function TunnelHome() {
-    const canvasRef = useRef<HTMLCanvasElement | null>(null);
-    const textRef = useRef<HTMLDivElement | null>(null);
-    const wrapperRef = useRef<HTMLDivElement | null>(null);
-    const socketRef = useRef<WebSocket | null>(null);
-
     const [isAnimating, setIsAnimating] = useState(false);
     const [animationComplete, setAnimationComplete] = useState(false);
     const [connectionStatus, setConnectionStatus] = useState('Disconnected');
-    const [activeTooltip, setActiveTooltip] = useState<{
-        username: string;
-        x: number;
-        y: number;
-    } | null>(null);
-
-    const animationStartTimeRef = useRef<number | null>(null);
 
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
     const [showSearchWave, setShowSearchWave] = useState(false);
@@ -226,51 +233,49 @@ export default function TunnelHome() {
     const [userPositions, setUserPositions] = useState<{ username: string; x: number; y: number }[]>([]);
     const [titleShow, setTitleShow] = useState(true);
 
+    const canvasRef = useRef<HTMLCanvasElement | null>(null);
+    const textRef = useRef<HTMLDivElement | null>(null);
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
+    const socketRef = useRef<WebSocket | WebSocketService | null>(null);
+    const animationStartTimeRef = useRef<number | null>(null);
+
     useEffect(() => {
-        socketRef.current = new WebSocket('ws://localhost:8080');
+        const ws = WebSocketService.getInstance();
+        socketRef.current = ws;
 
-        socketRef.current.onopen = () => {
-            setConnectionStatus('Connected to server');
-            console.log('WebSocket connected');
-
-            if (socketRef.current) {
-                socketRef.current.send(
-                    JSON.stringify({
-                        type: 'SET_USERNAME',
-                        username: 'TunnelVisitor_' + Math.floor(Math.random() * 1000),
-                    }),
-                );
-            }
+        const handleOnlineUsers = (data: { users: OnlineUser[] }) => {
+            setOnlineUsers(data.users || []);
+            placeRandomUserIcons(data.users || []);
         };
 
-        socketRef.current.onclose = () => {
-            setConnectionStatus('Disconnected from server');
-            console.log('WebSocket disconnected');
-        };
+        try {
+            const initializeWebSocket = async () => {
+                try {
+                    await ws.connect();
+                    setConnectionStatus('Connected to server');
+                    console.log('WebSocket connected');
 
-        socketRef.current.onerror = (error) => {
-            setConnectionStatus('Connection error');
-            console.error('WebSocket error:', error);
-        };
-
-        socketRef.current.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                console.log('Received message:', data);
-
-                if (data.type === 'ONLINE_USERS_UPDATE') {
-                    setOnlineUsers(data.users || []);
-                    // when we get users update, update the visualization
-                    placeRandomUserIcons(data.users);
+                    ws.addListener('ONLINE_USERS_UPDATE', handleOnlineUsers);
+                } catch (error) {
+                    setConnectionStatus('Connection error');
+                    console.error('Failed to connect:', error);
                 }
-            } catch (error) {
-                console.error('Error parsing WebSocket message:', error);
-            }
-        };
+            };
+
+            initializeWebSocket();
+        } catch (error) {
+            setConnectionStatus('Setup error');
+            console.error('WebSocket setup error:', error);
+        }
 
         return () => {
-            if (socketRef.current) {
-                socketRef.current.close();
+            try {
+                if (ws) {
+                    ws.removeListener('ONLINE_USERS_UPDATE', handleOnlineUsers);
+                    ws.disconnect();
+                }
+            } catch (error) {
+                console.error('Cleanup error:', error);
             }
         };
     }, []);
@@ -409,9 +414,26 @@ export default function TunnelHome() {
             setShowSearchWave(true);
             startSearchCircles();
 
-            // Update the URL to match your Express backend route
-            const res = await fetch('http://localhost:8080/api/onlineUsers', {
+            const ws = socketRef.current as WebSocketService;
+
+            if (ws && ws.isConnected()) {
+                console.log('Requesting online users through WebSocketService');
+                const success = ws.requestOnlineUsers();
+
+                if (success) {
+                    console.log('Successfully sent request for online users');
+                    /* listener in the useEffect  will handle the response */
+                    return;
+                }
+
+                console.warn('WebSocket request failed, falling back to HTTP API');
+            }
+
+            const res = await fetch('http://localhost:8080/api/users/online', {
                 method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
 
             if (!res.ok) {
@@ -502,16 +524,6 @@ export default function TunnelHome() {
         console.log('User positions:', newPositions);
     };
 
-    // user iconlarni hover qilganda
-    const handleUserHover = (username: string, x: number, y: number) => {
-        setActiveTooltip({ username, x, y });
-    };
-
-    // user iconlarni hoverdan chiqganda
-    const handleUserLeave = () => {
-        setActiveTooltip(null);
-    };
-
     // private chatni boshlash
     const startPrivateChat = (username: string) => {
         if (socketRef.current) {
@@ -545,24 +557,12 @@ export default function TunnelHome() {
                         key={pos.username}
                         x={pos.x}
                         y={pos.y}
-                        onMouseEnter={() => handleUserHover(pos.username, pos.x, pos.y)}
-                        onMouseLeave={handleUserLeave}
                         onClick={() => startPrivateChat(pos.username)}
                         style={{ cursor: 'pointer' }}
-                    />
-                ))}
-
-                {/* user iconlarni hover qilganda */}
-                {activeTooltip && (
-                    <UserTooltip
-                        style={{
-                            left: `${activeTooltip.x}px`,
-                            top: `${activeTooltip.y}px`,
-                        }}
                     >
-                        {activeTooltip.username}
-                    </UserTooltip>
-                )}
+                        <UserLabel>{pos.username}</UserLabel>
+                    </UserIcon>
+                ))}
             </CanvasWrapper>
             <ButtonContainer>
                 <SearchButton onClick={handleSearch}>

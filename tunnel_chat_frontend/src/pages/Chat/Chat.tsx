@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { motion } from 'framer-motion';
 import { EditIcon, SendIcon } from 'lucide-react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { message } from 'antd';
 import WebSocketService from '@/socket/websocket';
 import { AuthHandlerData, Message, MessageHandlerData, RoomInfo } from '@/types';
 import RoomInfoDropdown from './RoomDropdown';
+import Button from '@/components/Atoms/Button/Button';
 
 const EVENT_HANDLERS = {
     AUTH: ['AUTH_RESPONSE', 'USERNAME_SET'],
@@ -179,8 +180,34 @@ const TimeStamp = styled.div<{ isMine: boolean }>`
     padding: 0 4px;
 `;
 
+const EmptyChatContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #aaa;
+    text-align: center;
+    padding: 2rem;
+`;
+
+const EmptyChatTitle = styled.h2`
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #fff;
+    font-weight: 500;
+`;
+
+const EmptyChatDescription = styled.p`
+    font-size: 1rem;
+    max-width: 500px;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+`;
+
 export default function Chat() {
-    const { roomId } = useParams();
     const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -193,6 +220,8 @@ export default function Chat() {
         messages: null as ((data: MessageHandlerData) => void) | null,
         auth: null as ((data: AuthHandlerData) => void) | null,
     });
+    const { roomId } = useParams();
+    const navigate = useNavigate();
 
     // here we reset the join flag when roomId changes
     useEffect(() => {
@@ -490,62 +519,85 @@ export default function Chat() {
     };
 
     return (
-        <>
-            <ChatContainer>
-                <RoomInfoDropdown roomInfo={roomInfo} />
-                <MessagesWrapper>
-                    <MessagesContainer>
-                        {messages.map((msg, index) => {
-                            if (msg.isSystem) {
-                                return <SystemMessage key={index}>{msg.text}</SystemMessage>;
-                            }
+        <ChatContainer>
+            {roomId ? (
+                <>
+                    <RoomInfoDropdown roomInfo={roomInfo} />
+                    <MessagesWrapper>
+                        <MessagesContainer>
+                            {messages.map((msg, index) => {
+                                if (msg.isSystem) {
+                                    return <SystemMessage key={index}>{msg.text}</SystemMessage>;
+                                }
 
-                            const messageText = msg.isMine
-                                ? msg.rawMessage || msg.text
-                                : msg.rawMessage ||
-                                  (msg.sender && msg.text.includes(`${msg.sender}: `)
-                                      ? msg.text.replace(`${msg.sender}: `, '')
-                                      : msg.text);
+                                const messageText = msg.isMine
+                                    ? msg.rawMessage || msg.text
+                                    : msg.rawMessage ||
+                                      (msg.sender && msg.text.includes(`${msg.sender}: `)
+                                          ? msg.text.replace(`${msg.sender}: `, '')
+                                          : msg.text);
 
-                            return (
-                                <MessageRow key={index} isMine={msg.isMine}>
-                                    <MessageContentContainer isMine={msg.isMine}>
-                                        {!msg.isMine && msg.sender && <SenderName>{msg.sender}</SenderName>}
+                                return (
+                                    <MessageRow key={index} isMine={msg.isMine}>
+                                        <MessageContentContainer isMine={msg.isMine}>
+                                            {!msg.isMine && msg.sender && <SenderName>{msg.sender}</SenderName>}
 
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.8 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            transition={{ duration: 0.3 }}
-                                        >
-                                            <MessageBubble isMine={msg.isMine}>{messageText}</MessageBubble>
-                                        </motion.div>
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.8 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ duration: 0.3 }}
+                                            >
+                                                <MessageBubble isMine={msg.isMine}>{messageText}</MessageBubble>
+                                            </motion.div>
 
-                                        <TimeStamp isMine={msg.isMine}>{formatMessageTime(msg.timestamp)}</TimeStamp>
-                                    </MessageContentContainer>
-                                </MessageRow>
-                            );
-                        })}
-                        <div ref={messagesEndRef} />
-                    </MessagesContainer>
-                </MessagesWrapper>
+                                            <TimeStamp isMine={msg.isMine}>
+                                                {formatMessageTime(msg.timestamp)}
+                                            </TimeStamp>
+                                        </MessageContentContainer>
+                                    </MessageRow>
+                                );
+                            })}
+                            <div ref={messagesEndRef} />
+                        </MessagesContainer>
+                    </MessagesWrapper>
 
-                <InputArea>
-                    <StyledTextField>
-                        <TextInput
-                            placeholder="Type a message..."
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                        />
-                        <IconButtonWrapper>
-                            <EditIcon size={24} />
-                        </IconButtonWrapper>
-                    </StyledTextField>
-                    <SendButton onClick={sendMessage}>
-                        <SendIcon size={20} />
-                    </SendButton>
-                </InputArea>
-            </ChatContainer>
-        </>
+                    <InputArea>
+                        <StyledTextField>
+                            <TextInput
+                                placeholder="Type a message..."
+                                value={input}
+                                onChange={(e) => setInput(e.target.value)}
+                                onKeyPress={handleKeyPress}
+                            />
+                            <IconButtonWrapper>
+                                <EditIcon size={24} />
+                            </IconButtonWrapper>
+                        </StyledTextField>
+                        <SendButton onClick={sendMessage}>
+                            <SendIcon size={20} />
+                        </SendButton>
+                    </InputArea>
+                </>
+            ) : (
+                <EmptyChatContainer>
+                    <EmptyChatTitle>Hey, welcome back !</EmptyChatTitle>
+                    <EmptyChatDescription>
+                        Please go to rooms and select the room you would like to join and chat with people.
+                    </EmptyChatDescription>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                        <Button
+                            onClick={() => navigate('/rooms')}
+                            variant="outline"
+                            fullWidth={true}
+                            rounded={true}
+                            size="medium"
+                        >
+                            {' '}
+                            🚀 Join the Rooms
+                        </Button>
+                    </div>
+                </EmptyChatContainer>
+            )}
+        </ChatContainer>
     );
 }

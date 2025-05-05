@@ -353,6 +353,21 @@ class WebSocketService {
     public getCurrentRooms(): string[] {
         return Array.from(this.currentRooms);
     }
+
+    /**
+     * Request online users list from server
+     */
+    public requestOnlineUsers(): boolean {
+        if (!this.isConnected()) {
+            console.error('Cannot request online users: WebSocket is not connected');
+            return false;
+        }
+
+        console.log('Requesting online users from WebSocket server');
+        return this.send({
+            type: 'GET_ONLINE_USERS',
+        });
+    }
 }
 
 export default WebSocketService;
