@@ -12,6 +12,8 @@ export type Message = {
     isMine: boolean;
     isSystem?: boolean;
     timestamp?: Date;
+    sender?: string;
+    rawMessage?: string;
 };
 
 export type MessageHandlerData = {
