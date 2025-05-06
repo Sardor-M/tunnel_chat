@@ -471,7 +471,7 @@ export default function TunnelRooms() {
             )}
             <ButtonWrapper>
                 <Button variant="submit" position="full" onClick={() => setShowCreateModal(true)}>
-                    Create Room
+                    💬 Create Room
                 </Button>
             </ButtonWrapper>
 
@@ -524,7 +524,7 @@ export default function TunnelRooms() {
                             marginBottom: '15px',
                         }}
                     >
-                        Create Room
+                        💬 Create Room
                     </Button>
                     <Button
                         variant="danger"
@@ -534,7 +534,7 @@ export default function TunnelRooms() {
                             marginBottom: '25px',
                         }}
                     >
-                        Cancel
+                        ✖️ Cancel
                     </Button>
                 </ModalContent>
             </CreateRoomModal>
