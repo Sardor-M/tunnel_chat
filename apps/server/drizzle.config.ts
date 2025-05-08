@@ -9,6 +9,6 @@ export default defineConfig({
     dialect: 'postgresql',
     strict: true,
     dbCredentials: {
-        url: process.env.DATABASE_URL || 'postgresql://tunnel_user:secure_password@localhost:5432/tunnel_chat',
+        url: process.env.DATABASE_URL!,
     },
 });
