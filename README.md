@@ -12,13 +12,13 @@
  <img src="https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black"/>
 </div>
 
-# Tunnel Chat
+# tunnel_chat
 
 ## 📖 About
 
 **Tunnel Chat** is a secure, end-to-end encrypted messaging application designed for privacy-conscious users. Built as a monorepo with a React frontend and Express backend, the app provides real-time communication via WebSockets, secure authentication, file sharing capabilities, and room-based discussions. With its clean, modern UI and robust security features, Tunnel Chat prioritizes both user experience and data privacy.
 
-## 🚀 Getting Started
+## How to start ?
 
 ### Prerequisites
 
@@ -31,7 +31,7 @@
 
 ```bash
 # clone the repo
-git clone [https://github.com/your-username/tunnel_chat](https://github.com/your-username/tunnel_chat)
+git clone git@github.com:Sardor-M/tunnel_chat.git
 
 # install dependencies
 pnpm install
