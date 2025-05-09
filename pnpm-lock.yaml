@@ -134,6 +134,9 @@ importers:
       globals:
         specifier: ^15.14.0
         version: 15.15.0
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
       typescript-eslint:
         specifier: ^8.18.2
         version: 8.32.0(eslint@9.26.0)(typescript@5.8.3)
