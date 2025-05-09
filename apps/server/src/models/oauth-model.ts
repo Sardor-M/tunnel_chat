@@ -1,7 +1,7 @@
 import redis from '../config/redis';
 import { authService } from '../services/auth-service';
 import OAuth2Server from 'oauth2-server';
-import { OAuthToken, OAuthUser } from '../types/auth';
+import { OAuthToken } from '../types/auth';
 import axios from 'axios';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
