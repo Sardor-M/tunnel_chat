@@ -1,0 +1,7 @@
+/README.md
+
+# common folders to ignore
+node_modules
+dist
+build
+coverage

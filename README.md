@@ -1,166 +1,222 @@
 <div align="center">
-  <!-- <img src="src/assets/logo.png" alt="tunnel_chat_logo" height="300" width="auto" /> -->
-</div>
+ </div>
 &nbsp;
-<div align="center"> 
-  <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black"/> 
-  <img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=Vite&logoColor=white"/>
-  <img src="https://img.shields.io/badge/WebSockets-010101?style=flat-square&logo=socket.io&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Framer_Motion-0055FF?style=flat-square&logo=framer&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Styled_Components-DB7093?style=flat-square&logo=styled-components&logoColor=white"/>
+<div align="center">
+ <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black"/>
+ <img src="https://img.shields.io/badge/Typescript-3178C6?style=flat-square&logo=Typescript&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=Vite&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white"/>
+ <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=redis&logoColor=white"/>
+ <img src="https://img.shields.io/badge/WebSockets-010101?style=flat-square&logo=socket.io&logoColor=white"/>
+ <img src="https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black"/>
 </div>
 
 # Tunnel Chat
 
-## 📖 Description
+## 📖 About
 
-Tunnel Chat is a secure, end-to-end encrypted messaging application designed for privacy-conscious users. The app provides real-time communication with WebSocket protocol, secure authentication, and peer-to-peer encrypted file sharing capabilities. With its clean, modern UI and robust security features, Tunnel Chat prioritizes both user experience and data privacy.
+**Tunnel Chat** is a secure, end-to-end encrypted messaging application designed for privacy-conscious users. Built as a monorepo with a React frontend and Express backend, the app provides real-time communication via WebSockets, secure authentication, file sharing capabilities, and room-based discussions. With its clean, modern UI and robust security features, Tunnel Chat prioritizes both user experience and data privacy.
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-- npm (v8 or higher)
+- pnpm (v8 or higher)
 - Node.js (v18 or higher)
+- PostgreSQL (v15 or higher)
+- Redis (v6 or higher)
 
 ### Installation
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/tunnel_chat
+# clone the repo
+git clone [https://github.com/your-username/tunnel_chat](https://github.com/your-username/tunnel_chat)
 
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+# install dependencies
+pnpm install
 ```
 
-Open [http://localhost:5173](http://localhost:5173) to view the application in Vite's dev server.
+🔑 **Set Environment Configuration**:
 
-## 🔒 Key Features
+To function properly, you need to configure environment variables for both the frontend and backend applications:
 
-- **Real-time Communication**: End-to-end encrypted messaging with WebSocket protocol for instant delivery
-- **User Authentication**: Secure login and registration system with JWT token-based authentication
-- **File Sharing**: Peer-to-peer encrypted file sharing system for securely transferring documents
-- **Tunnel Visualization**: Interactive visualization of secure connection tunnels between users
-- **User Discovery**: Find and connect with online users through an intuitive interface
-- **Mobile Responsive**: Fully responsive design that works across devices
+- Frontend Config:
 
-## 🔧 Technical Stack
+  - Copy `web/frontend/.env.example` to `web/frontend/.env.dev`
+  - Fill in your Firebase credentials and Google OAuth client ID
 
-### Frontend Architecture:
+- Backend Config:
 
-- **Component-Based Design**: Organized using a modular approach for maintainability and scalability
-- **Animation-Rich UI**: Cyberpunk-inspired interface with subtle animations for enhanced user experience
-- **Responsive Layout**: Adaptive design for all screen sizes
+  - Copy `web/server/.env.example` to `web/server/.env`
+  - Configure your database connection, Redis settings, JWT secret, and OAuth credentials
 
-### Frontend Core:
 
-- <img src="https://reactjs.org/favicon.ico" width="20" height="20" alt="React" valign="middle"> **React 18**
-- <img src="https://www.typescriptlang.org/favicon-32x32.png" width="20" height="20" alt="TypeScript" valign="middle"> **TypeScript**
-- <img src="https://vitejs.dev/logo.svg" width="20" height="20" alt="Vite" valign="middle"> **Vite**
-- <img src="https://styled-components.com/logo.png" width="20" height="20" alt="Styled Components" valign="middle"> **Styled Components**
-- <img src="https://user-images.githubusercontent.com/7850794/164965523-3eced4c4-6020-467e-acde-f11b7900ad62.png" width="20" height="20" alt="Framer Motion" valign="middle"> **Framer Motion**
+🔒 **Key Features**:
 
-### WebSocket Integration:
+- `Real-time Communication`: End-to-end encrypted messaging with WebSocket protocol for instant delivery
+- `Room-Based Chat`: Create, join, and manage chat rooms with multiple participants
+- `User Authentication`: Secure login and registration system with JWT tokens and OAuth 2.0 (Google) integration
+- `File Sharing`: Upload, download, and manage files with metadata support
+- `Online User Tracking`: Real-time status updates of connected users
+- `Message History`: Retrieve and display previous messages in chat rooms
+- `Mobile Responsive`: Fully responsive design that works across devices
 
-- **Custom WebSocket Service**: Handles real-time communication between users
-- **Connection Management**: Smart reconnection and state synchronization
-- **Packet Encryption**: End-to-end encryption for all transmitted data
+🔧 **Technical Stack**:
 
-### Animations and Visualization:
+**Monorepo Architecture**:
 
-- **Canvas-Based Rendering**: Custom animations for tunnel visualization
-- **Keyframe Animations**: Subtle UI motion effects using styled-components
-- **Interactive Elements**: Responsive user interactions with animated feedback
+- `pnpm Workspaces`: Manages shared packages between frontend and backend
+- `Shared Types`: Common type definitions used across the application
+- `Standardized Configs`: Shared ESLint and TypeScript configurations
 
-## 📁 Project Structure
+**Frontend**:
 
+- <img src="https://reactjs.org/favicon.ico" width="20" height="20" alt="React" valign="middle"> React 18
+- <img src="https://www.typescriptlang.org/favicon-32x32.png" width="20" height="20" alt="TypeScript" valign="middle"> TypeScript
+- <img src="https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg" width="20" height="20" alt="Ant Design" valign="middle"> Ant Design
+- <img src="https://vitejs.dev/logo.svg" width="20" height="20" alt="Vite" valign="middle"> Vite
+- <img src="https://styled-components.com/logo.png" width="20" height="20" alt="Styled Components" valign="middle"> Styled Components
+- <img src="https://user-images.githubusercontent.com/7850794/164965523-3eced4c4-6020-467e-acde-f11b7900ad62.png" width="20" height="20" alt="Framer Motion" valign="middle"> Framer Motion
+- <img src="https://oauth.net/images/oauth-logo-square.png" width="20" height="20" alt="OAuth" valign="middle"> React OAuth/Google
+- <img src="https://reactrouter.com/favicon.ico" width="20" height="20" alt="React Router" valign="middle"> React Router DOM
+
+**Backend**:
+
+- <img src="https://expressjs.com/images/favicon.png" width="20" height="20" alt="Express" valign="middle"> Express.js
+- <img src="https://www.typescriptlang.org/favicon-32x32.png" width="20" height="20" alt="TypeScript" valign="middle"> TypeScript
+- <img src="https://www.postgresql.org/media/img/about/press/elephant.png" width="20" height="20" alt="PostgreSQL" valign="middle"> PostgreSQL
+- <img src="https://pbs.twimg.com/media/F7V2rLQWUAAgaLh?format=jpg&name=360x360" width="20" height="20" alt="Drizzle" valign="middle"> Drizzle ORM
+- <img src="https://redis.io/favicon.png" width="20" height="20" alt="Redis" valign="middle"> Redis
+- <img src="https://cdn.worldvectorlogo.com/logos/passport.svg" width="20" height="20" alt="Passport" valign="middle"> Passport & OAuth 2.0
+- <img src="https://socket.io/images/favicon.png" width="20" height="20" alt="WebSocket" valign="middle"> WebSockets
+- <img src="https://jwt.io/img/favicon/favicon-16x16.png" width="20" height="20" alt="JWT" valign="middle"> JWT: for authentication
+
+📁 **Project Structure**:
 ```
-tunnel_chat/
-├── node_modules/
-├── public/
-├── src/                   # Application source code
-│   ├── assets/            # Static assets and images
-│   ├── components/        # Reusable components
-│   │   ├── Atoms/         # Base UI components
-│   │   │   └── Button/    # Button components
-│   │   └── ...
-│   ├── hooks/             # Custom React hooks
-│   ├── pages/             # Application pages
-│   │   ├── Home/          # Landing page
-│   │   │   ├── LandingHome.tsx
-│   │   │   ├── FeaturesSection.tsx
-│   │   │   └── ...
-│   │   ├── Rooms/         # Chat rooms interface
-│   │   └── ...
-│   ├── router/            # Routing configuration
-│   ├── socket/            # WebSocket services
-│   │   └── websocket.ts
-│   └── App.tsx            # Main application component
-└── vite.config.ts         # Vite configuration
+tunnel_chat/                   
+├── web/                      
+│   ├── frontend/              
+│   │   ├── public/            
+│   │   ├── src/               
+│   │   │   ├── assets/        
+│   │   │   ├── components/    # Atomic Design Components
+│   │   │   ├── config/        # Firebase Configs
+│   │   │   ├── context/       # React context providers
+│   │   │   ├── layout/        # Layout components
+│   │   │   ├── pages/         # Page components
+│   │   │   ├── services/      # API services
+│   │   │   ├── socket/        # WebSocket client
+│   │   │   ├── types/         
+│   │   │   ├── utils/         # Utility functions
+│   │   │   ├── App.tsx        
+│   │   │   └── main.tsx       
+│   │   ├── .env.example       
+│   │   ├── package.json       
+│   │   └── vite.config.ts     
+│   │
+│   └── server/                
+│       ├── drizzle/           # Drizzle ORM migrations
+│       ├── logs/              
+│       ├── src/               
+│       │   ├── api/           # API routes by feature
+│       │   ├── auth/          # Authentication logic
+│       │   ├── config/        # Redis Configs
+│       │   ├── controllers/   # Request handlers
+│       │   ├── db/            # Database models & configuration
+│       │   ├── middleware/    # Express middleware
+│       │   ├── services/      # Business logic
+│       │   ├── socket/        # WebSocket server
+│       │   ├── types/         
+│       │   └── app.ts         
+│       ├── uploads/           
+│       ├── .env.example       
+│       ├── drizzle.config.ts  
+│       └── package.json       
+│
+├── packages/                  
+│   ├── common/                # Shared types and utilities
+│   │   ├── dist/              # Compiled output
+│   │   ├── src/               # Source code
+│   │   │   ├── types/         # Shared type definitions
+│   │   │   └── utils/         # Shared utility functions
+│   │   └── package.json       
+│   │
+│   ├── eslint-config/         # Shared ESLint configs
+│   │   ├── .eslintrc.json     # ESLint rules
+|   |   └── package.json 
+│   │
+│   └── typescript-config/     # Shared TS configs
+│       ├── base.json          # Base TS configs
+│       ├── node.json          # Node-specific configs
+│       └── package.json 
+│
+├── scripts/                   
+│   └── banner.js             
+│
+├── .gitignore                 
+├── package.json               # Root package with workspace config
+├── pnpm-workspace.yaml        # PNPM workspace definition
+└── README.md                  
 ```
+🔐 **Security Features**:
 
-## 🔐 Security Features
+- End-to-End Encryption: Messages are encrypted on the client side
+- JWT Authentication: Secure token-based authentication system
+- OAuth Integration: Support for Google OAuth 2.0 authentication
+- Rate Limiting: Protection against brute force attacks
+- Secure File Handling: Controlled file uploads with validation
 
-- **End-to-End Encryption**: All messages are encrypted on the client side
-- **Secure Authentication**: JWT-based authentication system
-- **No Message Storage**: Messages are not stored on servers
-- **P2P File Transfer**: Direct encrypted file transfers between users
-- **Connection Tunnels**: Secure communication channels visualized in the UI
+## API Endpoints
 
-## 🎨 UI/UX Design
+- Base path: `/api`
 
-- **Cyberpunk Theme**: Dark mode with neon blue accents
-- **Interactive Elements**: Animated buttons and interactive visualizations
-- **Responsive Layout**: Mobile-first approach ensuring usability on all devices
-- **User Presence**: Visual indicators for online users
-- **Connection Visualization**: Dynamic visualization of secure tunnels between users
+**Auth**
+- `POST /oauth/google` - Authenticate with Google OAuth
+- `GET /user/profile` - Get authenticated user profile
 
-## 🔄 Build & Deployment
+**Rooms**
+- `GET /rooms` - Get list of available chat rooms
+- `POST /rooms` - Create a new chat room
+- `POST /rooms/join` - Join an existing room
+- `POST /rooms/leave` - Leave a room
+- `GET /rooms/:roomId/members` - Get members of a room
+- `GET /chat/:roomId/history` - Get message history for a room
+
+**Users**
+- `GET /users/online` - Get list of online users
+
+**Files**
+- `POST /files/upload` - Upload a file
+- `GET /files/:fileId` - Download a file
+- `GET /files/:fileId/metadata` - Get file metadata
+- `DELETE /files/:fileId` - Delete a file
+
+📚 **Available Scripts**:
 
 ```bash
-# Build for production
-npm run build
+# start dev servers (frontend and server)
+pnpm dev
 
-# Preview production build locally
-npm run preview
+# start frontend only
+pnpm dev:frontend
 
-# Lint code
-npm run lint
+# start server only
+pnpm dev:server
 
-# Format code
-npm run format
+# generate db migrations
+pnpm db:generate
+
+# apply migrations to db
+pnpm db:push
+
+# lint code
+pnpm lint
+
+# format code
+pnpm format
 ```
 
-## 📚 Available Scripts
-
-```bash
-npm run dev         # Start development server
-npm run build       # Build for production
-npm run preview     # Preview production build
-npm run lint        # Lint code with ESLint
-npm run format      # Format code with Prettier
-```
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/private-rooms`)
-3. Commit your changes (`git commit -m 'feat: added private room functionality'`)
-4. Push to the branch (`git push -u origin feature/private-rooms`)
-5. Open a Pull Request
-
-## 📝 License
+📝 **License**:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgements
-
-- Inspired by cyberpunk aesthetics and privacy-focused communication tools
-- Built with React, TypeScript, and WebSockets to create a modern, secure chat experience
-- Special thanks to all contributors who helped shape this project

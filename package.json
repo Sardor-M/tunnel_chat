@@ -9,7 +9,7 @@
     "dev:common": "echo \"Building Common Package...\" && pnpm --filter @tunnel_chat/common dev",
     "build": "echo \"Building All Packages...\" && pnpm -r build",
     "lint": "echo \"Linting All Packages...\" && pnpm -r lint",
-    "format": "echo \"Formatting Code...\" && prettier --write \"**/*.{ts,tsx,md}\"",
+    "format": "echo \"Formatting Code...\" && prettier --config .prettierrc --ignore-path .prettierignore --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
     "start": "echo \"Starting Production Server...\" && pnpm --filter @tunnel_chat/server start"
   },
   "devDependencies": {
