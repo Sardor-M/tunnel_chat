@@ -1,11 +1,12 @@
 {
-    "extends": "../../packages/typescript-config/node.json",
+    "extends": "../../packages/typescript-config/base.json",
     "compilerOptions": {
         "baseUrl": ".",
         "paths": {
             "@/*": ["./src/*"]
         },
-        "noEmit": true
+        "noEmit": true,
+        "types": ["vite/client"]
     },
-    "include": ["src"]
+    "include": ["src", "src/types/import-meta.d.ts"]
 }
