@@ -1,0 +1,3 @@
+{
+    "extends": ["@tunnel_chat/eslint-config"]
+}

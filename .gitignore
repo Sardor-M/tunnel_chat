@@ -1,0 +1,61 @@
+# dependencies
+**/node_modules
+node_modules
+
+
+# build outputs
+**/dist
+dist
+build
+lib
+out
+.output
+
+
+*.tsbuildinfo
+
+# editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# drizzle related
+.drizzle
+
+# cache
+.eslintcache
+.stylelintcache
+
+
+/uploads
+
+# backend related
+**/.migrations
+**/.snapshots
+*.db
+
+
+# package files
+.npm
+.pnpm-debug.log*
+.pnpm-store/
+.pnpm-workspace.yaml
+
+
+# env files
+**/.env
+**/.env.*
+.env
+.env.*
+
+# logs
+logs
+*.log
+pnpm-debug.log*

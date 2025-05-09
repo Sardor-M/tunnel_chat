@@ -1,0 +1,25 @@
+{
+  "name": "tunnel_chat",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/banner.js",
+    "dev:frontend": "echo \"Starting Frontend Development Server...\" && pnpm --filter @tunnel_chat/frontend dev",
+    "dev:server": "echo \"Starting Backend Server...\" && pnpm --filter @tunnel_chat/server dev",
+    "dev:common": "echo \"Building Common Package...\" && pnpm --filter @tunnel_chat/common dev",
+    "build": "echo \"Building All Packages...\" && pnpm -r build",
+    "lint": "echo \"Linting All Packages...\" && pnpm -r lint",
+    "format": "echo \"Formatting Code...\" && prettier --write \"**/*.{ts,tsx,md}\"",
+    "start": "echo \"Starting Production Server...\" && pnpm --filter @tunnel_chat/server start"
+  },
+  "devDependencies": {
+    "cli-progress": "^3.12.0",
+    "concurrently": "^9.1.2",
+    "ora": "^8.2.0",
+    "prettier": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
