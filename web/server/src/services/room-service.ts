@@ -18,6 +18,7 @@ export const roomService = {
 
         if (!user.length) return [];
 
+        // we get the rooms the user is a member of
         const userRooms = await db
             .select({
                 room: rooms,
@@ -27,12 +28,26 @@ export const roomService = {
             .innerJoin(rooms, eq(roomMembers.roomId, rooms.id))
             .where(eq(roomMembers.userId, user[0].id));
 
+        // then get all public rooms
         const publicRooms = await db.select().from(rooms).where(eq(rooms.isPrivate, false));
 
-        // root map for the both public and private
+        // then get the private rooms created by this user
+        const privateRoomsCreatedByUser = await db
+            .select()
+            .from(rooms)
+            .where(and(eq(rooms.isPrivate, true), eq(rooms.createdBy, user[0].id)));
+
+        console.log('Private rooms created by user:', privateRoomsCreatedByUser);
+
         const roomMap = new Map();
 
+        // first we add all rooms the user is a member of
         userRooms.forEach(({ room }) => {
+            roomMap.set(room.id, room);
+        });
+
+        // then we add all private rooms created by the user
+        privateRoomsCreatedByUser.forEach((room) => {
             roomMap.set(room.id, room);
         });
 
@@ -48,10 +63,10 @@ export const roomService = {
                     id: room.id,
                     name: room.name,
                     isPrivate: true as const,
-                    isEncrypted: room.isEncrypted,
+                    isEncrypted: Boolean(room.isEncrypted),
                     createdAt: room.createdAt.getTime(),
                     members: [],
-                    encryptionKey: room.encryptionKey,
+                    encryptionKey: room.encryptionKey || '',
                     creator: room.createdBy,
                 } as PrivateRoom;
             }
@@ -60,13 +75,12 @@ export const roomService = {
                 id: room.id,
                 name: room.name,
                 isPrivate: false as const,
-                isEncrypted: room.isEncrypted,
+                isEncrypted: Boolean(room.isEncrypted),
                 createdAt: room.createdAt.getTime(),
                 members: [],
             } as Room;
         });
     },
-
     /**
      * Create a public room.
      */
@@ -112,6 +126,7 @@ export const roomService = {
 
     /**
      * Create a private room.
+     * Now this method definitely ensure the member is added correctly
      */
     async createPrivateRoom(name: string, creator: string, isEncrypted: boolean = false): Promise<RoomResult> {
         const user = await db.select().from(users).where(eq(users.username, creator)).limit(1);
@@ -121,35 +136,45 @@ export const roomService = {
         }
 
         try {
-            const encryptionKey = isEncrypted ? crypto.randomBytes(32).toString('hex') : null;
+            const encryptionKey = isEncrypted ? crypto.randomBytes(32).toString('hex') : '';
 
-            const [room] = await db
-                .insert(rooms)
-                .values({
-                    name,
-                    isPrivate: true,
-                    isEncrypted,
-                    encryptionKey,
-                    createdBy: user[0].id,
-                })
-                .returning();
+            return await db.transaction(async (tx) => {
+                const [room] = await tx
+                    .insert(rooms)
+                    .values({
+                        name,
+                        isPrivate: true,
+                        isEncrypted,
+                        encryptionKey,
+                        createdBy: user[0].id,
+                    })
+                    .returning();
 
-            await db.insert(roomMembers).values({
-                roomId: room.id,
-                userId: user[0].id,
-                role: 'admin',
+                const [member] = await tx
+                    .insert(roomMembers)
+                    .values({
+                        roomId: room.id,
+                        userId: user[0].id,
+                        role: 'admin',
+                    })
+                    .returning();
+
+                console.log('Created private room with member:', { room, member });
+
+                return {
+                    success: true,
+                    room: {
+                        id: room.id,
+                        name: room.name,
+                        isPrivate: true as const,
+                        isEncrypted: isEncrypted,
+                        createdAt: room.createdAt.getTime(),
+                        members: [creator],
+                        encryptionKey: encryptionKey,
+                        creator: user[0].id,
+                    } as PrivateRoom,
+                };
             });
-            return {
-                success: true,
-                room: {
-                    id: room.id,
-                    name: room.name,
-                    isPrivate: false as const,
-                    isEncrypted: false,
-                    createdAt: room.createdAt.getTime(),
-                    members: [creator],
-                } as Room,
-            };
         } catch (error) {
             console.error('Create private room error:', error);
             return { success: false, error: 'Failed to create room' };

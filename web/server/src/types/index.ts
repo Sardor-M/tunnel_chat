@@ -24,7 +24,7 @@ export type PrivateRoom = {
     members: string[];
     isPrivate: true;
     isEncrypted: boolean;
-    encryptionKey: string;
+    encryptionKey: string | null;
     creator: string;
     createdAt: number;
 };
