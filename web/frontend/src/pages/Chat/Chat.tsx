@@ -36,26 +36,26 @@ const MessagesWrapper = styled.div`
 `;
 
 const MessagesContainer = styled.div`
-    flex: 1;
-    padding: 16px;
-    padding-bottom: 8px;
+    flex: 2;
+    padding: 25px;
+    padding-bottom: 5px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     overflow-y: auto;
 
-    scrollbar-width: thin;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
     &::-webkit-scrollbar {
-        width: 4px;
-    }
-    &::-webkit-scrollbar-thumb {
-        background-color: rgba(255, 255, 255, 0.2);
-        border-radius: 4px;
+        display: none;
+        width: 0;
+        height: 0;
     }
 `;
 
 const InputArea = styled.div`
-    padding: 8px 14px;
+    padding: 25px;
     background-color: #111;
     border-top: 1px solid #222;
     width: 100%;
@@ -110,7 +110,7 @@ const IconButtonWrapper = styled.button`
 `;
 
 const SendButton = styled.button`
-    min-width: 48px;
+    min-width: 60px;
     height: 38px;
     border-radius: 15px;
     background-color: #4285f4;
@@ -127,7 +127,7 @@ const SendButton = styled.button`
     }
 
     svg {
-        font-size: 1.3rem;
+        font-size: 1.5rem;
     }
 `;
 
@@ -211,15 +211,17 @@ export default function Chat() {
     const [roomInfo, setRoomInfo] = useState<RoomInfo | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [currentUsername, setCurrentUsername] = useState(localStorage.getItem('username') || 'Anonymous');
     const [socket, setSocket] = useState<WebSocketService | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const username = localStorage.getItem('username') || 'Anonymous';
+
+    const messagesEndRef = useRef<HTMLDivElement>(null);
     const hasJoinedRef = useRef(false);
     const handlersRef = useRef({
         messages: null as ((data: MessageHandlerData) => void) | null,
         auth: null as ((data: AuthHandlerData) => void) | null,
     });
+
     const { roomId } = useParams();
     const navigate = useNavigate();
 
@@ -248,7 +250,7 @@ export default function Chat() {
                     } else {
                         ws.send({
                             type: 'SET_USERNAME',
-                            username,
+                            username: currentUsername,
                         });
                     }
 
@@ -260,7 +262,7 @@ export default function Chat() {
                             ws.send({
                                 type: 'JOIN_ROOM',
                                 roomId,
-                                username,
+                                username: currentUsername,
                             });
                         }, 300);
                     }
@@ -293,12 +295,21 @@ export default function Chat() {
                 ws.send({
                     type: 'JOIN_ROOM',
                     roomId,
-                    username,
+                    username: currentUsername,
                 });
             }
         }
 
         const handleMessages = (data: any) => {
+            if (data.type === 'CHAT') {
+                console.log('Received chat message:', {
+                    sender: data.sender,
+                    username: currentUsername,
+                    isMine: data.sender === currentUsername,
+                    message: data.message,
+                });
+            }
+
             try {
                 if (data.type === 'ROOM_JOINED') {
                     setRoomInfo({
@@ -373,23 +384,23 @@ export default function Chat() {
                             ]);
                         }
                     } else {
-                        const isMine = data.sender === username;
-                        const text = isMine ? data.message : `${data.sender}: ${data.message}`;
-
+                        const isMine = data.sender === currentUsername;
+                        // const text = isMine ? data.message : `${data.sender}: ${data.message}`;
                         const isDuplicate = messages.some(
                             (msg) =>
                                 !msg.isSystem &&
-                                msg.text === text &&
+                                msg.rawMessage === data.message &&
                                 msg.isMine === isMine &&
                                 msg.timestamp &&
                                 Math.abs(msg.timestamp.getTime() - (data.timestamp || Date.now())) < 100,
                         );
+
                         if (!isDuplicate) {
                             setMessages((prev) => [
                                 ...prev,
                                 {
-                                    text: isMine ? data.message : `${data.sender}: ${data.message}`,
-                                    isMine,
+                                    text: data.message,
+                                    isMine: isMine,
                                     sender: data.sender,
                                     rawMessage: data.message,
                                     timestamp: new Date(data.timestamp || Date.now()),
@@ -408,13 +419,22 @@ export default function Chat() {
             try {
                 if (data.type === 'AUTH_RESPONSE' && data.success) {
                     setIsAuthenticated(true);
+                    if (data.username) {
+                        localStorage.setItem('username', data.username);
+                        setCurrentUsername(data.username);
+                    }
                 } else if (data.type === 'USERNAME_SET' && data.success) {
                     setIsAuthenticated(true);
+                    if (data.username) {
+                        localStorage.setItem('username', data.username);
+                        setCurrentUsername(data.username);
+                    }
                 }
             } catch (error) {
                 console.error('Error parsing WebSocket message:', error);
             }
         };
+
         // we store the handlers in refs for cleanup
         handlersRef.current.messages = handleMessages;
         handlersRef.current.auth = handleAuth;
@@ -432,7 +452,7 @@ export default function Chat() {
                 setupWebSocketEventListener(ws, EVENT_HANDLERS.MESSAGES, handlersRef.current.messages, 'remove');
             }
         };
-    }, [roomId, username]);
+    }, [roomId, currentUsername]);
 
     useEffect(() => {
         if (!isAuthenticated || !socket || hasJoinedRef.current) return;
@@ -448,7 +468,7 @@ export default function Chat() {
             socket.send({
                 type: 'JOIN_ROOM',
                 roomId: currentRoomId,
-                username,
+                username: currentUsername,
             });
 
             // we pre-populate room info if available
@@ -463,7 +483,7 @@ export default function Chat() {
                 });
             }
         }
-    }, [isAuthenticated, socket, roomId, username]);
+    }, [isAuthenticated, socket, roomId, currentUsername]);
 
     const setupWebSocketEventListener = (
         ws: WebSocketService,
@@ -518,24 +538,27 @@ export default function Chat() {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    const handleLeaverRoom = () => {
+        if (!socket || !roomInfo) return;
+
+        socket.send({
+            type: 'LEAVE_ROOM',
+            roomId: roomInfo.id,
+            username: currentUsername,
+        });
+    };
+
     return (
         <ChatContainer>
             {roomId ? (
                 <>
-                    <RoomInfoDropdown roomInfo={roomInfo} />
+                    <RoomInfoDropdown roomInfo={roomInfo} onLeaveRoom={handleLeaverRoom} />
                     <MessagesWrapper>
                         <MessagesContainer>
                             {messages.map((msg, index) => {
                                 if (msg.isSystem) {
                                     return <SystemMessage key={index}>{msg.text}</SystemMessage>;
                                 }
-
-                                const messageText = msg.isMine
-                                    ? msg.rawMessage || msg.text
-                                    : msg.rawMessage ||
-                                      (msg.sender && msg.text.includes(`${msg.sender}: `)
-                                          ? msg.text.replace(`${msg.sender}: `, '')
-                                          : msg.text);
 
                                 return (
                                     <MessageRow key={index} isMine={msg.isMine}>
@@ -547,7 +570,9 @@ export default function Chat() {
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 transition={{ duration: 0.3 }}
                                             >
-                                                <MessageBubble isMine={msg.isMine}>{messageText}</MessageBubble>
+                                                <MessageBubble isMine={msg.isMine}>
+                                                    {msg.rawMessage || msg.text}
+                                                </MessageBubble>
                                             </motion.div>
 
                                             <TimeStamp isMine={msg.isMine}>
