@@ -2,7 +2,7 @@
     "extends": "./base.json",
     "compilerOptions": {
         "module": "Node16",
-        "moduleResolution": "node",
+        "moduleResolution": "Node16",
         "target": "es2022",
         "lib": ["es2022"],
         "outDir": "dist",

@@ -6,6 +6,7 @@ import styled from 'styled-components';
 
 type RoomDropdownProps = {
     roomInfo: RoomInfoType | null;
+    onLeaveRoom?: () => void;
 };
 
 const RoomDropdown = styled.div`
@@ -37,6 +38,7 @@ const RoomNamePreview = styled.div`
     display: flex;
     align-items: center;
     gap: 8px;
+    position: relative;
 `;
 
 const RoomBadge = styled.span<{ variant: 'private' | 'encrypted' }>`
@@ -130,7 +132,23 @@ const RoomId = styled.div`
     margin-top: 8px;
 `;
 
-export default function RoomInfoDropdown({ roomInfo }: RoomDropdownProps) {
+const LeaveButton = styled.button`
+    background-color: #d9534f;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-left: auto;
+
+    &:hover {
+        background-color: #c9302c;
+    }
+`;
+
+export default function RoomInfoDropdown({ roomInfo, onLeaveRoom }: RoomDropdownProps) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -155,6 +173,13 @@ export default function RoomInfoDropdown({ roomInfo }: RoomDropdownProps) {
         setIsOpen(!isOpen);
     };
 
+    const handleLeaveRoom = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onLeaveRoom) {
+            onLeaveRoom();
+        }
+    };
+
     return (
         <RoomDropdown ref={dropdownRef}>
             <DropdownToggle onClick={toggleDropdown}>
@@ -163,6 +188,7 @@ export default function RoomInfoDropdown({ roomInfo }: RoomDropdownProps) {
                     {roomInfo.isPrivate && <RoomBadge variant="private">Private</RoomBadge>}
                     {roomInfo.isEncrypted && <RoomBadge variant="encrypted">🔒 Encrypted</RoomBadge>}
                 </RoomNamePreview>
+                <LeaveButton onClick={handleLeaveRoom}>Leave Room</LeaveButton>
                 <ChevronIcon>{isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}</ChevronIcon>
             </DropdownToggle>
 
